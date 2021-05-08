@@ -9,6 +9,7 @@ from threading import Thread
 from Player.player import Player
 from Player.player import PlayerStatus
 
+gameReady = False
 """ La funzione che segue accetta le connessioni  dei client in entrata."""
 def accetta_connessioni_in_entrata():
     while True:
@@ -45,8 +46,8 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
         print(msg)
         if msg != bytes("{quit}", "utf8"):
             broadcast(msg, nome+": ")
+            global gameReady
             gameReady = True
-            
             if msg != bytes("{start}", "utf8"):
                 for p in list: #Imposto il giocatore corrente come PRONTO
                     if p.getName() == nome:
@@ -74,8 +75,6 @@ def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione d
 clients = {}
 indirizzi = {}
 list = []
-global gameReady
-gameReady = False
 HOST = ''
 PORT = 53000
 BUFSIZ = 1024
