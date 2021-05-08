@@ -42,3 +42,6 @@ class Player :
     
     def getStatus(self):
         self.status
+        
+    def setStatus(self, status):
+        self.status = status
