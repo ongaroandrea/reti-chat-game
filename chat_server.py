@@ -5,27 +5,33 @@ Corso di Programmazione di Reti - Università di Bologna"""
 
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
-global statusGame 
+
+from Player.player import Player
+from Player.player import PlayerStatus
+
 """ La funzione che segue accetta le connessioni  dei client in entrata."""
 def accetta_connessioni_in_entrata():
     while True:
         client, client_address = SERVER.accept()
         print("%s:%s si è collegato." % client_address)
         #al client che si connette per la prima volta fornisce alcune indicazioni di utilizzo
-        client.send(bytes("Stato Gioco %s" % statusGame, "utf8")) # NON FUNZIONA QUA
-        client.send(bytes("Salve! Digita il tuo Nome seguito dal tasto Invio!", "utf8"))
-        # ci serviamo di un dizionario per registrare i client
-        indirizzi[client] = client_address
-        #diamo inizio all'attività del Thread - uno per ciascun client
-        Thread(target=gestice_client, args=(client,)).start()
+        if gameReady == True:
+             client.send(bytes("Il gioco è attualmente in esecuzione - RIPROVA PIU' TARDI", "utf8"))
+        else: 
+            client.send(bytes("Salve! Digita il tuo Nome seguito dal tasto Invio!", "utf8"))
+            # ci serviamo di un dizionario per registrare i client
+            indirizzi[client] = client_address
+            #diamo inizio all'attività del Thread - uno per ciascun client
+            Thread(target=gestice_client, args=(client,)).start()
         
 
 """La funzione seguente gestisce la connessione di un singolo client."""
 def gestice_client(client):  # Prende il socket del client come argomento della funzione.
        
     nome = client.recv(BUFSIZ).decode("utf8")
-    #da il benvenuto al client e gli indica come fare per uscire dalla chat quando ha terminato
-    benvenuto = 'Benvenuto %s! Se vuoi lasciare la Chat, scrivi {quit} per uscire.' % nome
+    list.append(Player(nome, "Burattinaio"))
+
+    benvenuto = 'Benvenuto %s! Se vuoi lasciare la Chat, scrivi: \n {start} per dichiararti pronto \n {quit} per uscire.' % nome
     client.send(bytes(benvenuto, "utf8"))
     msg = "%s si è unito all chat!" % nome
     #messaggio in broadcast con cui vengono avvisati tutti i client connessi che l'utente x è entrato
@@ -37,12 +43,19 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     while True:
         msg = client.recv(BUFSIZ)
         print(msg)
-        if ( msg == bytes("start", "utf8")):
-            broadcast(bytes("Gioco Iniziato", "utf8"))
-            statusGame = True
-            print(statusGame)
-        elif msg != bytes("{quit}", "utf8"):
+        if msg != bytes("{quit}", "utf8"):
             broadcast(msg, nome+": ")
+            gameReady = True
+            
+            if msg != bytes("{start}", "utf8"):
+                for p in list: #Imposto il giocatore corrente come PRONTO
+                    if p.getName() == nome:
+                        p.getStatus = PlayerStatus.READY 
+                    
+            for p in list: #Controllo se tutti i giocatori sono pronti
+                if p.getStatus == PlayerStatus.NOT_READY :
+                    gameReady = False
+                    break                
         else:
             client.send(bytes("{quit}", "utf8"))
             client.close()
@@ -54,11 +67,15 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
 def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione del nome.
     for utente in clients:
         utente.send(bytes(prefisso, "utf8")+msg)
+    for obj in list:
+        print(obj.getName())
 
         
 clients = {}
 indirizzi = {}
-statusGame =False
+list = []
+global gameReady
+gameReady = False
 HOST = ''
 PORT = 53000
 BUFSIZ = 1024

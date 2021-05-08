@@ -4,6 +4,7 @@ from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 import tkinter as tkt
 
+
 """La funzione che segue ha il compito di gestire la ricezione dei messaggi."""
 def receive():
     while True:

@@ -4,18 +4,19 @@ Created on Sat May  8 13:20:20 2021
 
 @author: Gruppo Carboni - Ongaro
 """
+from Player.playerStatus import PlayerStatus 
 
 class Player :
     
-    def __init__ (self, name, role,score = 0,rightAnswers = 0 ):
+    def __init__ (self, name, role,score = 0,rightAnswers = 0,status = PlayerStatus.NOT_READY):
          
         self.name = name
         self.role = role 
         self.score= score
         self.rightAnswers = rightAnswers
-     
+        self.status = status
+        
     def showInfo(self):
-         
         print ("Nome: ", self.name)
         print ("Ruolo: ", self.role)
         print ("Punteggio: ", self.score)
@@ -38,3 +39,6 @@ class Player :
     
     def incrementRightAnswer(self):
         self.rightAnswers += 1
+    
+    def getStatus(self):
+        self.status
