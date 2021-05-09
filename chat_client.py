@@ -1,9 +1,10 @@
-#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Script relativa alla chat del client utilizzato per lanciare la GUI Tkinter."""
+
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 import tkinter as tkt
-
+from tkinter import ttk
 
 """La funzione che segue ha il compito di gestire la ricezione dei messaggi."""
 def receive():
@@ -30,43 +31,50 @@ def send(event=None):
     if msg == "{quit}":
         client_socket.close()
         finestra.quit()
+        finestra.destroy()
 
 """La funzione che segue viene invocata quando viene chiusa la finestra della chat."""
 def on_closing(event=None):
     my_msg.set("{quit}")
     send()
 
-finestra = tkt.Tk()
-finestra.title("Chat_Laboratorio")
+def ready(event=None):
+    msg = "{start}"
+    client_socket.send(bytes(msg, "utf8"))
 
-#creiamo il Frame per contenere i messaggi
+finestra = tkt.Tk()
+finestra.title("Chat Game")
+
+#Frame per contenere i messaggi
 messages_frame = tkt.Frame(finestra)
 #creiamo una variabile di tipo stringa per i messaggi da inviare.
 my_msg = tkt.StringVar()
 #indichiamo all'utente dove deve scrivere i suoi messaggi
-my_msg.set("Scrivi qui i tuoi messaggi.")
+my_msg.set("")
 #creiamo una scrollbar per navigare tra i messaggi precedenti.
-scrollbar = tkt.Scrollbar(messages_frame)
+yscrollbar = tkt.Scrollbar(messages_frame)
 
 # La parte seguente contiene i messaggi.
-msg_list = tkt.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
-scrollbar.pack(side=tkt.RIGHT, fill=tkt.Y)
-msg_list.pack(side=tkt.LEFT, fill=tkt.BOTH)
-msg_list.pack()
-messages_frame.pack()
+msg_list = tkt.Listbox(messages_frame, yscrollcommand=yscrollbar.set)
+yscrollbar.pack(side=tkt.RIGHT, fill=tkt.Y)
+
+msg_list.pack(side=tkt.LEFT, fill=tkt.BOTH, expand=True)
+messages_frame.pack(expand=True, fill=tkt.BOTH)
 
 #Creiamo il campo di input e lo associamo alla variabile stringa
-entry_field = tkt.Entry(finestra, textvariable=my_msg)
+entry_field = tkt.Entry(finestra, textvariable=my_msg, width=150)
 # leghiamo la funzione send al tasto Return
 entry_field.bind("<Return>", send)
-
-entry_field.pack()
+entry_field.pack(side="left", expand=True)
 #creiamo il tasto invio e lo associamo alla funzione send
 send_button = tkt.Button(finestra, text="Invio", command=send)
 #integriamo il tasto nel pacchetto
-send_button.pack()
+send_button.pack(side="left", expand=True)
 
-finestra.protocol("WM_DELETE_WINDOW", on_closing)
+ready_button = tkt.Button(finestra, text="Pronto")
+ready_button.pack(side="right", expand=True)
+
+
 
 #----Connessione al Server----
 HOST = "127.0.0.1" #input('Inserire il Server host: ')
@@ -84,5 +92,6 @@ client_socket.connect(ADDR)
 
 receive_thread = Thread(target=receive)
 receive_thread.start()
-# Avvia l'esecuzione della Finestra Chat.
+
+finestra.geometry("1280x720")
 tkt.mainloop()
