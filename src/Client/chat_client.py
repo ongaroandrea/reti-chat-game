@@ -39,8 +39,8 @@ def on_closing(event=None):
     send()
 
 def ready(event=None):
-    msg = "{start}"
-    client_socket.send(bytes(msg, "utf8"))
+    my_msg.set("{start}")
+    send()
 
 finestra = tkt.Tk()
 finestra.title("Chat Game")
@@ -71,7 +71,7 @@ send_button = tkt.Button(finestra, text="Invio", command=send)
 #integriamo il tasto nel pacchetto
 send_button.pack(side="left", expand=True)
 
-ready_button = tkt.Button(finestra, text="Pronto")
+ready_button = tkt.Button(finestra, text="Pronto", command=ready)
 ready_button.pack(side="right", expand=True)
 
 
