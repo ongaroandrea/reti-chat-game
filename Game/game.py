@@ -4,16 +4,19 @@ Created on Sat May  8 19:17:36 2021
 
 @author: andre
 """
-
-#from ..Player import player_folder
-#from ..Player.playerStatus import PlayerStatus
-from gameStatus import GameStatus
+from Game.gameStatus import GameStatus
+from Player.player import Player
+from Player.playerStatus import PlayerStatus
 
 class Game:
     
     def __init__ (self,gameStatus = GameStatus.NOT_STARTED, playerList = []):
         self.playerList = playerList
         self.gameStatus = gameStatus
+
+
+    def get_status(self):
+        return self.gameStatus
 
     def get_players(self):
         return self.playerList
@@ -23,17 +26,20 @@ class Game:
     
     def start_game(self):
         if len(self.playerList) == 1 :
-            return GameStatus.NOT_STARTED #non si può giocare da soli
+            self.gameStatus = GameStatus.NOT_STARTED #non si può giocare da soli
+            return False
         
         if self.gameStatus == GameStatus.STARTED:
-            return GameStatus.NOT_STARTED #impossibile far partire un'altra partita quando è già partita una
+            self.gameStatus = GameStatus.NOT_STARTED #impossibile far partire un'altra partita quando è già partita una
+            return False
         
-        for player in self.get_players:
+        for player in self.playerList:
             if player.getStatus == PlayerStatus.NOT_READY:
-                return GameStatus.NOT_STARTED #i giocatori non sono tutti pronti
-        
-        statusGame = GameStatus.STARTED #Non ci sono stati intoppi, il gioco è partito
-        return statusGame
+                self.gameStatus = GameStatus.NOT_STARTED #i giocatori non sono tutti pronti
+                return  False
+            
+        self.gameStatus = GameStatus.STARTED #Non ci sono stati intoppi, il gioco è partito
+        return True
         #parte il timer
         #currentPlayer = Primo
         #Mostrare i primi tre menu
@@ -57,5 +63,8 @@ class Game:
             #cambiare chi è il primo
             print("smo")
         self.playerList.remove(player)
-        
+
+#Probabilmente inutil
+if __name__ == "__main__":
+    game = Game()
         
