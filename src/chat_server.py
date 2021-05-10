@@ -28,6 +28,14 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     nome = client.recv(BUFSIZ).decode("utf8")
     if game.check_name_player(nome) : 
         client.send(bytes('Il nome %s è già stato utilizzato. Scegline un altro' % nome, "utf8"))
+        while True:
+            msg = client.recv(BUFSIZ)
+            print(msg)
+            if game.check_name_player(msg) == False:
+                print("BOG")
+                break
+            else:
+                client.send(bytes('Il nome %s è già stato utilizzato. Scegline un altro' % msg, "utf8"))
     else:
         game.addPlayerToGameList(nome)
     
