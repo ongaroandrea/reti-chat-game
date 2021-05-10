@@ -1,0 +1,59 @@
+{
+    "world": 
+    [
+        {
+            "answer": "b",
+            "more_info": "https://en.wikipedia.org/wiki/World_Ocean",
+            "question": "Which one is the largest ocean in the World?\n(a) Indian\n(b) Pacific\n(c) Atlantic\n(d) Arctic\n",
+            "user_response": "None"
+        },
+        {
+            "answer": "b",
+            "more_info": "https://en.wikipedia.org/wiki/Dead_Sea",
+            "question": "Dead Sea is located between which two countries?\n(a)Jordan and Sudan\n(b)Jordan and Israel\n(c)Turkey and UAE\n(d)UAE and Egypt\n",
+            "user_response": "None"
+        },
+        {
+            "answer": "a",
+            "more_info": "https://en.wikipedia.org/wiki/Statue_of_Liberty",
+            "question": "Which country gifted the 'Statue of Liberty' to USA in 1886?\n(a)French\n(b)Canada\n(c)Brazil\n(d)England\n",
+            "user_response": "None"
+        },
+        {
+            "answer": "a",
+            "more_info": "https://en.wikipedia.org/wiki/Bermuda_Triangle",
+            "question": "In which ocean 'Bermuda Triangle' region is located?\n(a)Atlantic\n(b)Indian\n(c)Pacific\n(d)Arctic\n",
+            "user_response": "None"
+        },
+        {
+            "answer": "a",
+            "more_info": "https://en.wikipedia.org/wiki/Tea",
+            "question": "Which one is the largest producer of tea in the World?\n(a)China\n(b)Sri Lanka\n(c)India\n(d)Kenya\n",
+            "user_response": "None"
+        },
+        {
+            "answer": "d",
+            "more_info": "https://www.earthday.org/about/the-history-of-earth-day/",
+            "question": "Earth day is celebrated on?\n(a)September 17\n(b)February 16\n(c)April 4\n(d)April 22\n",
+            "user_response": "None"
+        },
+        {
+            "answer": "b",
+            "more_info": "https://en.wikipedia.org/wiki/World_Wide_Fund_for_Nature",
+            "question": "Where the headquaters of World Wide Fund for Nature (WWF) located?\n(a)Canada\n(b)Switzerland\n(c)Germany\n(d)USA\n",
+            "user_response": "None"
+        },
+        {
+            "answer": "d",
+            "more_info": "https://www.worldatlas.com/articles/top-cotton-producing-countries-in-the-world.html",
+            "question": "Which country is the largest producer of cotton?\n(a)India\n(b)Pakistan\n(c)Brazil\n(d)China\n",
+            "user_response": "None"
+        },
+        {
+            "answer": "b",
+            "more_info": "https://www.orderofbooks.com/authors/sir-arthur-conan-doyle/",
+            "question": "With which of the following books did Arthur Conan Doyle make his literary debut?\n(a)A Study in Scarlet \n(b)The Surgeon of Gaster Fell \n(c)The Lost World\n(d)The Adventures of Sherlock Holmes\n",
+            "user_response": "None"
+        }
+    ]
+}
