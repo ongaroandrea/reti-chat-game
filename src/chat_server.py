@@ -6,6 +6,10 @@ from threading import Thread
 from Game.game import Game
 from Game.gameStatus import GameStatus
 
+
+START = bytes("{start}", "utf8")
+QUIT = bytes("{quit}", "utf8")
+
 """ La funzione che segue accetta le connessioni  dei client in entrata."""
 def accetta_connessioni_in_entrata():
     while True:
@@ -37,34 +41,33 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     client.send(bytes('{quit} per uscire dal gioco', "utf8"))
 
     #messaggio in broadcast con cui vengono avvisati tutti i client connessi che l'utente x è entrato
-    broadcast(bytes("%s si è unito all chat!" % nome, "utf8"))
+    broadcast(bytes("%s si è unito alla chat!" % nome, "utf8"))
     #aggiorna il dizionario clients creato all'inizio
     clients[client] = nome
     
     #si mette in ascolto del thread del singolo client e ne gestisce l'invio dei messaggi o l'uscita dalla Chat
     while True:
         msg = client.recv(BUFSIZ)
-        if msg != bytes("{quit}", "utf8"):
-            if msg == bytes("{start}", "utf8"):
-                if game.get_status() != GameStatus.STARTED:
-                    if game.check_player_status(nome):
-                        client.send(bytes('Ti sei già dichiarato pronto', "utf8"))
-                    else:
-                        game.setPlayerReady(nome)
-                        broadcast(bytes("Il giocatore %s è pronto" % nome, "utf8"))
-                        game.start_game()
-                        if game.get_status() == GameStatus.STARTED:
-                            broadcast(bytes("Tutti pronti, si parte", "utf8"))
-                else:
-                    client.send(bytes('Il gioco è già partito', "utf8"))
-            broadcast(msg, nome+": ")
-            
-        else:
+        
+        if msg == QUIT:
             client.send(bytes("Si è scelto di uscire", "utf8"))
             client.close()
             del clients[client]
             broadcast(bytes("%s ha abbandonato la Chat." % nome, "utf8"))
             break
+        elif msg == START and game.get_status() == GameStatus.STARTED:
+            client.send(bytes("Gioco già cominciato!", "utf8"))
+        elif msg == START and game.check_player_status(nome):
+            client.send(bytes('Ti sei già dichiarato pronto', "utf8"))
+        elif msg == START and game.get_status() != GameStatus.STARTED:
+            game.setPlayerReady(nome)
+            broadcast(bytes("Il giocatore %s è pronto" % nome, "utf8"))
+            #incrementare il numero di giocatori pronti nel bottone [opzionale]
+            game.start_game()
+            if game.get_status() == GameStatus.STARTED:
+                broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
+        else:
+            broadcast(msg, nome+": ")
 
 """ La funzione, che segue, invia un messaggio in broadcast a tutti i client."""
 def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione del nome.
