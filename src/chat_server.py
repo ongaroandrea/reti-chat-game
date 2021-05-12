@@ -64,18 +64,19 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             #incrementare il numero di giocatori pronti nel bottone [opzionale]
             if game.get_status() == GameStatus.STARTED:
                 broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
-                broadcast(bytes("Durata Partita: 300 secondi.", "utf8"))
+                broadcast(bytes("\nDurata Partita: 300 secondi.", "utf8"))
                 game.start_game()
         else:
             broadcast(msg, nome+": ")
             
+        #
         if game.get_status() == GameStatus.STARTED:
             currentPlayer = game.get_current_player().get_name()
             broadcast(bytes("\nTurno di: %s " % currentPlayer, "utf8"))
             broadcast(bytes("Scegli una porta tra 1, 2 , 3", "utf8"))
             game.set_status(GameStatus.MENU_PHASE) # non ci va qui
             
-        if game.get_status() == GameStatus.MENU_PHRASE:
+        if game.get_status() == GameStatus.MENU_PHASE:
             if game.answer_menu(msg):
                 broadcast(bytes(game.get_question(), "utf8"))
                 #set question phase
@@ -84,7 +85,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                 game.next_player()
                 game.set_status(GameStatus.STARTED) # non ci va qui
                 
-        if game.get_status() == GameStatus.QUESTION_PHRASE:
+        if game.get_status() == GameStatus.QUESTION_PHASE:
             if game.answer_question(msg):
                 print("Punteggio Aumentato")
             else:
