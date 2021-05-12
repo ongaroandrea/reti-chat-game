@@ -7,18 +7,24 @@ Created on Sat May  8 19:17:36 2021
 from Game.gameStatus import GameStatus
 from Player.player import Player
 from Player.playerStatus import PlayerStatus
-from Questions.question import Questions
+from Questions.question import Question
 from Menu.menu import Menu
 import threading
-import random
 
 class Game:
     
-    def __init__ (self,gameStatus = GameStatus.NOT_STARTED, playerList = [], currentPlayer = None,firstPlayer = None):
+    def __init__ (self,gameStatus = GameStatus.NOT_STARTED, playerList = [], 
+                  currentPlayer = None,turn = 0, question = Question(), menu = Menu()) :
+        
         self.playerList = playerList
         self.gameStatus = gameStatus
         self.currentPlayer = currentPlayer
-        self.firstPlayer = firstPlayer
+        self.turn = turn
+        self.question = question
+        self.menu = menu
+    
+    def set_status(self, status):
+        self.status = status
 
     def get_status(self):
         return self.gameStatus
@@ -33,9 +39,7 @@ class Game:
         return self.playerList[index]
     
     def check_name_player(self, name):
-        if self.get_player(name) != None:
-            return True
-        return False
+        return self.get_player(name) != None
     
     def get_player(self,name):
         for player in self.playerList:
@@ -45,62 +49,17 @@ class Game:
 
     def check_player_status(self, name):
         player = self.get_player(name)
-        if player.get_status() == PlayerStatus.READY:
-            return True
-        else:
-            return False
+        return player.get_status() == PlayerStatus.READY
     
     
-    def start_timer(self, time):
-        timer = threading.Timer(time)
+    def start_timer(self, time): # una nuova classe timer?
+        timer = threading.Timer(time,self.check_all_players_ready()) # cambiare funzione
         timer.start()
-        
         
     def start_game(self):  
-        timer = threading.Timer(2.0,self.next_player())
-        timer.start()
+        self.start_timer(2.0)
         self.currentPlayer = self.playerList[0]
         print(self.playerList[0].get_name())
-
-    
-    def get_questions(self):
-        #Mostrare i primi tre menu
-        question1, answer1, info1 = Questions.generate_question()
-        question2, answer2, info2 = Questions.generate_q()
-        
-        menu = [
-            (question1, answer1, info1)
-            (question2, answer2, info2)
-            (None, None, None)
-            ]
-        random.shuffle(menu)
-        
-        return menu
-        
-        
-        
-        #catturare la scelta dell'utente
-        #a seconda della scelta cancellare il giocatore o mostrare la domanda
-        #Mostrare la domanda e avviare un timer
-        #Se non risponde entro il timer - risposta sbagliata
-        #Se risponde male - risposta sbagliata
-        #Se risponde bene - Aumentare il punteggio (Il punteggio dato è tanto più grande a seconda del livello in cui siamo)
-        #Cos'è un livello? Ogni volta che si torna al primo posto si aggiunge un livello
-        #Si passa all'altra persona
-        
-        #return True
-        
-        #parte il timer
-        #currentPlayer = Primo
-        #Mostrare i primi tre menu
-        #catturare la scelta dell'utente
-        #a seconda della scelta cancellare il giocatore o mostrare la domanda
-        #Mostrare la domanda e avviare un timer
-        #Se non risponde entro il timer - risposta sbagliata
-        #Se risponde male - risposta sbagliata
-        #Se risponde bene - Aumentare il punteggio (Il punteggio dato è tanto più grande a seconda del livello in cui siamo)
-        #Cos'è un livello? Ogni volta che si torna al primo posto si aggiunge un livello
-        #Si passa all'altra persona
     
     def check_all_players_ready(self):
         if len(self.playerList) == 1:
@@ -119,9 +78,6 @@ class Game:
         self.gameStatus = GameStatus.STARTED
         return True
         
-    def stop_game():
-        return None
-        
     def addPlayerToGameList(self,name):
         self.playerList.append(Player(name,"role"))
         
@@ -130,23 +86,27 @@ class Game:
         player.set_status(PlayerStatus.READY)
         self.check_all_players_ready()
         
-    def removePlayer(self,player_name):
-        if self.get_player_by_index(0).get_name == player_name:
-            self.firstPlayer = self.get_player_by_index(1) #per gestire i turni
-
-        self.playerList.remove(player_name)# non funzion, è sbagliato
+    def removePlayer(self,player):
+        self.playerList.remove(player)
     
     def next_player(self):
-        print("nextPlayer")
+        if len(self.playerList) == self.counter - 1:
+            self.counter = -1
+            self.turn += 1
+        self.counter += 1
+        self.gameStatus = GameStatus.MENU_PHASE
+        return self.playerList[self.counter]
     
-    def answer_menu(answer):
-        #magari controllare che sia compresa tra 1 e 3
-        m = Menu()
-        m.generate_menu()
-        if m.get_correct_choice() == int(answer):
-            return True
-        else:
-            return False
+    def answer_menu(self,answer):
+        # controllare che sia compresa tra 1 e 3 e che sia un numero
+        self.menu.generate_menu()
+        return self.menu.get_correct_choice() == int(answer)
             
-    def answer_game(self,answer):
-        return True
+    def get_question(self):
+        self.question.generate_question()
+        return self.question.get_question()
+    
+    def answer_question(self,answer):
+        return self.question.get_answer() == answer
+
+        

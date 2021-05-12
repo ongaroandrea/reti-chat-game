@@ -71,20 +71,27 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             
         if game.get_status() == GameStatus.STARTED:
             currentPlayer = game.get_current_player().get_name()
-            broadcast(bytes("\nTurno di: %s " %currentPlayer, "utf8"))
+            broadcast(bytes("\nTurno di: %s " % currentPlayer, "utf8"))
             broadcast(bytes("Scegli una porta tra 1, 2 , 3", "utf8"))
-            msg = client.recv(BUFSIZ).decode("utf8") # mi rimetto in ascolto
-            if Game.answer_menu(msg):
-                broadcast(bytes("Domanda con possibili risposte", "utf8"))
-                msg = client.recv(BUFSIZ).decode("utf8") # mi rimetto in ascolto
-                print(msg)
-            else :
-                #cancellare il giocatore - bisongerà controllare che non si rimanga da soli in quel caso si è vinto
-                Game.next_player();
-                # false allora no
-           
+            game.set_status(GameStatus.MENU_PHASE) # non ci va qui
             
-
+        if game.get_status() == GameStatus.MENU_PHRASE:
+            if game.answer_menu(msg):
+                broadcast(bytes(game.get_question(), "utf8"))
+                #set question phase
+            else :
+                game.removePlayer(game.get_current_player())
+                game.next_player()
+                game.set_status(GameStatus.STARTED) # non ci va qui
+                
+        if game.get_status() == GameStatus.QUESTION_PHRASE:
+            if game.answer_question(msg):
+                print("Punteggio Aumentato")
+            else:
+                print("Nessun punteggio")
+            game.next_player()
+            
+        
 """ La funzione, che segue, invia un messaggio in broadcast a tutti i client."""
 def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione del nome.
     for utente in clients:

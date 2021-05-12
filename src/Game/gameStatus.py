@@ -10,4 +10,6 @@ from enum import Enum
 class GameStatus(Enum) :
     NOT_STARTED = 0
     STARTED = 1
-    ENDED = 2
+    MENU_PHASE = 2
+    QUESTION_PHASE = 3
+    ENDED = 4
