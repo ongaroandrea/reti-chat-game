@@ -29,8 +29,8 @@ def accetta_connessioni_in_entrata():
 def gestice_client(client):  # Prende il socket del client come argomento della funzione.
        
     nome = client.recv(BUFSIZ).decode("utf8")
-    while game.check_name_player(nome):
-        client.send(bytes('Il nome %s è già stato utilizzato. Scegline un altro' % nome, "utf8"))
+    while game.check_name_player(nome) or nome == "{start}":
+        client.send(bytes('Il nome %s è già stato utilizzato o è incompatibile. Scegline un altro' %nome, "utf8"))
         nome = client.recv(BUFSIZ).decode("utf8")
     
     game.addPlayerToGameList(nome)
