@@ -8,16 +8,17 @@ from Game.gameStatus import GameStatus
 from Player.player import Player
 from Player.playerStatus import PlayerStatus
 from Questions.question import Questions
-import time
+from Menu.menu import Menu
+import threading
 import random
 
 class Game:
     
-    def __init__ (self,gameStatus = GameStatus.NOT_STARTED, playerList = [], currentPlayer = None):
+    def __init__ (self,gameStatus = GameStatus.NOT_STARTED, playerList = [], currentPlayer = None,firstPlayer = None):
         self.playerList = playerList
         self.gameStatus = gameStatus
         self.currentPlayer = currentPlayer
-
+        self.firstPlayer = firstPlayer
 
     def get_status(self):
         return self.gameStatus
@@ -25,6 +26,9 @@ class Game:
     def get_players(self):
         return self.playerList
     
+    def get_current_player(self):
+        return self.currentPlayer
+
     def get_player_by_index(self, index):
         return self.playerList[index]
     
@@ -37,50 +41,27 @@ class Game:
         for player in self.playerList:
             if player.get_name() == name:
                 return player
-        
         return None
-    
-    
+
     def check_player_status(self, name):
         player = self.get_player(name)
         if player.get_status() == PlayerStatus.READY:
             return True
         else:
             return False
-        
-    def get_current_player(self):
-        return self.currentPlayer
     
-    def start_timer(self, t):
-        while t:
-            mins, secs = divmod(t, 60)
-            time.sleep(1)
-            t -= 1
-        #self.stop_game()
+    
+    def start_timer(self, time):
+        timer = threading.Timer(time)
+        timer.start()
         
         
-    def start_game(self):
-        '''
-        if len(self.playerList) == 1 :
-            self.gameStatus = GameStatus.NOT_STARTED #non si può giocare da soli
-            return False
-        
-        if self.gameStatus == GameStatus.STARTED:
-            #self.gameStatus = GameStatus.NOT_STARTED #impossibile far partire un'altra partita quando è già partita una ??????
-            return False
-        
-        for player in self.playerList:
-            if player.get_status() == PlayerStatus.NOT_READY:
-                self.gameStatus = GameStatus.NOT_STARTED #i giocatori non sono tutti pronti
-                return  False
-            
-        self.gameStatus = GameStatus.STARTED #Non ci sono stati intoppi, il gioco è partito
-        '''
-        #parte il timer
-        self.start_timer(300)
-        
+    def start_game(self):  
+        timer = threading.Timer(2.0,self.next_player())
+        timer.start()
         self.currentPlayer = self.playerList[0]
-        
+        print(self.playerList[0].get_name())
+
     
     def get_questions(self):
         #Mostrare i primi tre menu
@@ -126,12 +107,17 @@ class Game:
             self.gameStatus = GameStatus.NOT_STARTED #non si può giocare da soli
             return False
         
+        if self.gameStatus == GameStatus.STARTED:
+            #impossibile far partire un'altra partita quando è già partita una ??????
+            return False
+        
         for player in self.playerList:
             if player.get_status() == PlayerStatus.NOT_READY:
                 self.gameStatus = GameStatus.NOT_STARTED #i giocatori non sono tutti pronti
                 return  False
         
         self.gameStatus = GameStatus.STARTED
+        return True
         
     def stop_game():
         return None
@@ -144,13 +130,23 @@ class Game:
         player.set_status(PlayerStatus.READY)
         self.check_all_players_ready()
         
-    def removePlayer(self,player):
-        if self.get_player_by_index(1) == player:
-            #cambiare chi è il primo
-            print("smo")
-        self.playerList.remove(player)
+    def removePlayer(self,player_name):
+        if self.get_player_by_index(0).get_name == player_name:
+            self.firstPlayer = self.get_player_by_index(1) #per gestire i turni
 
-#Probabilmente inutil
-if __name__ == "__main__":
-    game = Game()
-        
+        self.playerList.remove(player_name)# non funzion, è sbagliato
+    
+    def next_player(self):
+        print("nextPlayer")
+    
+    def answer_menu(answer):
+        #magari controllare che sia compresa tra 1 e 3
+        m = Menu()
+        m.generate_menu()
+        if m.get_correct_choice() == int(answer):
+            return True
+        else:
+            return False
+            
+    def answer_game(self,answer):
+        return True

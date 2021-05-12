@@ -6,7 +6,6 @@ from threading import Thread
 from Game.game import Game
 from Game.gameStatus import GameStatus
 
-
 START = bytes("{start}", "utf8")
 QUIT = bytes("{quit}", "utf8")
 
@@ -64,19 +63,27 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             broadcast(bytes("Il giocatore %s è pronto" % nome, "utf8"))
             #incrementare il numero di giocatori pronti nel bottone [opzionale]
             if game.get_status() == GameStatus.STARTED:
-                broadcast(bytes("\nTutti pronti, si parte!\nDurata Partita: 300 secondi.", "utf8"))
+                broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
+                broadcast(bytes("Durata Partita: 300 secondi.", "utf8"))
                 game.start_game()
         else:
             broadcast(msg, nome+": ")
             
         if game.get_status() == GameStatus.STARTED:
-            currentPlayer = game.get_current_player()
+            currentPlayer = game.get_current_player().get_name()
             broadcast(bytes("\nTurno di: %s " %currentPlayer, "utf8"))
-            #start the game
-            menu = game.get_questions()
-            i = 0
-            for q in menu:
-                broadcast(bytes("%i. %s" %i %q[0], "utf8"))
+            broadcast(bytes("Scegli una porta tra 1, 2 , 3", "utf8"))
+            msg = client.recv(BUFSIZ).decode("utf8") # mi rimetto in ascolto
+            if Game.answer_menu(msg):
+                broadcast(bytes("Domanda con possibili risposte", "utf8"))
+                msg = client.recv(BUFSIZ).decode("utf8") # mi rimetto in ascolto
+                print(msg)
+            else :
+                #cancellare il giocatore - bisongerà controllare che non si rimanga da soli in quel caso si è vinto
+                Game.next_player();
+                # false allora no
+           
+            
 
 """ La funzione, che segue, invia un messaggio in broadcast a tutti i client."""
 def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione del nome.
