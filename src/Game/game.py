@@ -24,7 +24,7 @@ class Game:
         self.menu = menu
     
     def set_status(self, status):
-        self.status = status
+        self.gameStatus = status
 
     def get_status(self):
         return self.gameStatus
@@ -57,9 +57,10 @@ class Game:
         timer.start()
         
     def start_game(self):  
-        self.start_timer(2.0)
+        #self.start_timer(2.0)
+        self.gameStatus = GameStatus.STARTED
         self.currentPlayer = self.playerList[0]
-        print(self.playerList[0].get_name())
+        print("CURRENT PLAYA:" + self.playerList[0].get_name())
     
     def check_all_players_ready(self):
         if len(self.playerList) == 1:

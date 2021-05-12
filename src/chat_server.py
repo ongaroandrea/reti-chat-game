@@ -6,6 +6,8 @@ from threading import Thread
 from Game.game import Game
 from Game.gameStatus import GameStatus
 
+import random
+
 START = bytes("{start}", "utf8")
 QUIT = bytes("{quit}", "utf8")
 
@@ -68,24 +70,32 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                 game.start_game()
         else:
             broadcast(msg, nome+": ")
-            
-        #
-        if game.get_status() == GameStatus.STARTED:
+        
+        currentPlayer = ""
+        if game.get_status() != GameStatus.NOT_STARTED:
             currentPlayer = game.get_current_player().get_name()
+        
+        #-----------------------------------------------------------------dovrebbe entrarci subito ma non ci entra non so perche
+        if currentPlayer == nome and game.get_status() == GameStatus.STARTED:
             broadcast(bytes("\nTurno di: %s " % currentPlayer, "utf8"))
             broadcast(bytes("Scegli una porta tra 1, 2 , 3", "utf8"))
             game.set_status(GameStatus.MENU_PHASE) # non ci va qui
             
-        if game.get_status() == GameStatus.MENU_PHASE:
-            if game.answer_menu(msg):
-                broadcast(bytes(game.get_question(), "utf8"))
-                #set question phase
-            else :
-                game.removePlayer(game.get_current_player())
-                game.next_player()
-                game.set_status(GameStatus.STARTED) # non ci va qui
+        elif currentPlayer == nome and game.get_status() == GameStatus.MENU_PHASE:
+            if int(msg) != 1 and int(msg) != 2 and int(msg) != 3:
+                broadcast(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
+            else:
+                if game.answer_menu(int(msg)):
+                    broadcast(bytes(game.get_question(), "utf8"))
+                    game.set_status(GameStatus.QUESTION_PHRASE)
+                else:
+                    #----------------------------------------------------------un sacco di errori
+                    broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
+                    game.removePlayer(game.get_current_player())
+                    game.next_player()
+                    game.set_status(GameStatus.STARTED) # non ci va qui
                 
-        if game.get_status() == GameStatus.QUESTION_PHASE:
+        elif currentPlayer == nome and game.get_status() == GameStatus.QUESTION_PHRASE:
             if game.answer_question(msg):
                 print("Punteggio Aumentato")
             else:
