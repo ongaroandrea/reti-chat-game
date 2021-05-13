@@ -42,64 +42,70 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     client.send(bytes('{quit} per uscire dal gioco', "utf8"))
 
     broadcast(bytes("%s si è unito alla chat!" % nome, "utf8"))
-    #aggiorna il dizionario clients creato all'inizio
+    
     clients[client] = nome
     
     #si mette in ascolto del thread del singolo client e ne gestisce l'invio dei messaggi o l'uscita dalla Chat
     while True:
         msg = client.recv(BUFSIZ)
+        gameStatus = game.get_status()
         
-        if msg == QUIT:
+        if msg == QUIT: #------------------------------------------------------QUIT
             client.send(bytes("Si è scelto di uscire", "utf8"))
             client.close()
             del clients[client]
             broadcast(bytes("%s ha abbandonato la Chat." % nome, "utf8"))
             break
-        elif msg == START and game.get_status() == GameStatus.STARTED:
+        elif msg == START and gameStatus != GameStatus.NOT_STARTED: #----------ALREADY STARTED
             client.send(bytes("Gioco già cominciato!", "utf8"))
-        elif msg == START and game.check_player_status(nome):
+        elif msg == START and game.check_player_status(nome): #----------------ALREADY READY
             client.send(bytes('Ti sei già dichiarato pronto', "utf8"))
-        elif msg == START and game.get_status() != GameStatus.STARTED:
+        elif msg == START and gameStatus != GameStatus.STARTED: #--------------READY
             game.setPlayerReady(nome)
             broadcast(bytes("Il giocatore %s è pronto" % nome, "utf8"))
-            #incrementare il numero di giocatori pronti nel bottone [opzionale]
+            
             if game.get_status() == GameStatus.STARTED:
                 broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
-                broadcast(bytes("\nDurata Partita: 300 secondi.", "utf8"))
+                #broadcast(bytes("\nDurata Partita: 300 secondi.", "utf8"))
                 game.start_game()
         else:
             broadcast(msg, nome+": ")
         
         currentPlayer = ""
-        if game.get_status() != GameStatus.NOT_STARTED:
-            currentPlayer = game.get_current_player().get_name()
-        
-        #-----------------------------------------------------------------dovrebbe entrarci subito ma non ci entra non so perche
-        if currentPlayer == nome and game.get_status() == GameStatus.STARTED:
-            broadcast(bytes("\nTurno di: %s " % currentPlayer, "utf8"))
-            broadcast(bytes("Scegli una porta tra 1, 2 , 3", "utf8"))
-            game.set_status(GameStatus.MENU_PHASE) # non ci va qui
+        gameStatus = game.get_status()
+        if gameStatus != GameStatus.NOT_STARTED: # se il gioco è partito
+            currentPlayer = game.get_current_player().get_name() # ottengo il nome del giocatore attuale
             
-        elif currentPlayer == nome and game.get_status() == GameStatus.MENU_PHASE:
-            if int(msg) != 1 or int(msg) != 2 or int(msg) != 3: # questo controllo non va bene, se non è un numero va in bomba
-                broadcast(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
-            else:
-                if game.answer_menu(int(msg)):
-                    broadcast(bytes(game.get_question(), "utf8"))
-                    game.set_status(GameStatus.QUESTION_PHRASE)
-                else:
-                    #----------------------------------------------------------un sacco di errori
-                    broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
-                    game.removePlayer(game.get_current_player())
-                    game.next_player()
-                    game.set_status(GameStatus.STARTED) # non ci va qui
+            if gameStatus == GameStatus.STARTED: #-----------------------------GIOCO INIZIATO, SCEGLI PORTA
+                broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
+                broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
+                game.set_status(GameStatus.MENU_PHASE)
                 
-        elif currentPlayer == nome and game.get_status() == GameStatus.QUESTION_PHRASE:
-            if game.answer_question(msg):
-                print("Punteggio Aumentato")
-            else:
-                print("Nessun punteggio")
-            game.next_player()
+            if currentPlayer == nome: #se scrive il giocatore attuale
+                if gameStatus == GameStatus.MENU_PHASE: #----------------------PORTA SCELTA, SCEGLI RISPOSTA ALLA DOMANDA
+                    if int(msg) == 1 or int(msg) == 2 or int(msg) == 3: # verifica se ha messo un numero tra 1 e 3
+                        if game.answer_menu(msg): #----------------------------PORTA CON DOMANDA
+                            broadcast(bytes(game.get_question(), "utf8"))
+                            game.set_status(GameStatus.QUESTION_PHASE)
+                        else:
+                           
+                            broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
+                            game.removePlayer(game.get_current_player())
+                            game.next_player()
+                            game.set_status(GameStatus.STARTED) # non ci va qui
+                    else:
+                        broadcast(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
+                        
+                elif gameStatus == GameStatus.QUESTION_PHASE:
+                    if game.answer_question(msg):
+                        broadcast(bytes("Risposta esatta, punteggio aumentato!", "utf8"))
+                    else:
+                        broadcast(bytes("Risposta errata!", "utf8"))
+                    game.next_player()
+                    currentPlayer = game.get_current_player().get_name()
+                    broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
+                    broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
+                    game.set_status(GameStatus.MENU_PHASE)
             
         
 """ La funzione, che segue, invia un messaggio in broadcast a tutti i client."""
