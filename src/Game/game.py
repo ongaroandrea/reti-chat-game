@@ -14,7 +14,7 @@ import threading
 class Game:
     
     def __init__ (self,gameStatus = GameStatus.NOT_STARTED, playerList = [], 
-                  currentPlayer = None,turn = 0, question = Question(), menu = Menu()) :
+                  currentPlayer = None,turn = 0, question = Question(), menu = Menu(), counter = 0) :
         
         self.playerList = playerList
         self.gameStatus = gameStatus
@@ -22,6 +22,7 @@ class Game:
         self.turn = turn
         self.question = question
         self.menu = menu
+        self.counter = counter
     
     def set_status(self, status):
         self.gameStatus = status
@@ -75,7 +76,6 @@ class Game:
             if player.get_status() == PlayerStatus.NOT_READY:
                 self.gameStatus = GameStatus.NOT_STARTED #i giocatori non sono tutti pronti
                 return  False
-        
         self.gameStatus = GameStatus.STARTED
         return True
         
@@ -91,12 +91,14 @@ class Game:
         self.playerList.remove(player)
     
     def next_player(self):
+        print( "LUNGHEZZA %i",len(self.playerList))
+        print( "CONT %i",self.counter)
         if len(self.playerList) == self.counter - 1:
             self.counter = -1
             self.turn += 1
         self.counter += 1
         self.gameStatus = GameStatus.MENU_PHASE
-        return self.playerList[self.counter]
+        return self.playerList[0] # da modificare, ma non ho capito perchè qui il playerList è grandezza 1 mentre dovrebbe essere due con due giocatori
     
     def answer_menu(self,answer):
         # controllare che sia compresa tra 1 e 3 e che sia un numero
@@ -104,7 +106,8 @@ class Game:
         return self.menu.get_correct_choice() == int(answer)
             
     def get_question(self):
-        self.question.generate_question()
+        self.question.read_question_by_filter("tecnologia")
+        self.question.generate_question(1)
         return self.question.get_question()
     
     def answer_question(self,answer):

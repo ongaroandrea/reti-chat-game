@@ -25,7 +25,7 @@ class Question:
         return self.info
     
     def read_question_by_filter(self,filtro):
-        f = open('../../assets/questions/domande.json', )
+        f = open('../assets/Questions/domande.json', )
         data = json.load(f)
         self.listQuestion = data[filtro]
         

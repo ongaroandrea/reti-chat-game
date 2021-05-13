@@ -41,7 +41,6 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     client.send(bytes('Clicca il pulsante Pronto per dichiararti pronto \n', "utf8"))
     client.send(bytes('{quit} per uscire dal gioco', "utf8"))
 
-    #messaggio in broadcast con cui vengono avvisati tutti i client connessi che l'utente x è entrato
     broadcast(bytes("%s si è unito alla chat!" % nome, "utf8"))
     #aggiorna il dizionario clients creato all'inizio
     clients[client] = nome
@@ -82,7 +81,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             game.set_status(GameStatus.MENU_PHASE) # non ci va qui
             
         elif currentPlayer == nome and game.get_status() == GameStatus.MENU_PHASE:
-            if int(msg) != 1 and int(msg) != 2 and int(msg) != 3:
+            if int(msg) != 1 or int(msg) != 2 or int(msg) != 3: # questo controllo non va bene, se non è un numero va in bomba
                 broadcast(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
             else:
                 if game.answer_menu(int(msg)):

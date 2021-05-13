@@ -78,7 +78,7 @@ ready_button.pack(side="right", expand=True)
 
 #----Connessione al Server----
 HOST = "127.0.0.1" #input('Inserire il Server host: ')
-PORT = input('Inserire la porta del server host: ')
+PORT = 53000 #input('Inserire la porta del server host: ')
 if not PORT:
     PORT = 53000
 else:
