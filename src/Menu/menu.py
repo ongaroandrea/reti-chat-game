@@ -9,13 +9,13 @@ import random
 
 class Menu:
 
-    def __init__ (self,correct_choice = None):
-        self.correct_choice = correct_choice
+    def __init__ (self,wrong_choice = None):
+        self.wrong_choice = wrong_choice
 
-    def get_correct_choice(self):
-        return self.correct_choice
+    def get_wrong_choice(self):
+        return self.wrong_choice
 
     def generate_menu(self):
-        self.correct_choice = random.randint(1,3)
+        self.wrong_choice = random.randint(1,3)
         
     
