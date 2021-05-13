@@ -83,31 +83,35 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             else:
                 if currentPlayer == nome: #check giocatore
                     if gameStatus == GameStatus.MENU_PHASE: #------------------PORTA SCELTA
-                        if int(msg) == 1 or int(msg) == 2 or int(msg) == 3:
-                            if game.answer_menu(msg): #------------------------PORTA CON DOMANDA
-                                broadcast(bytes(game.get_question(), "utf8"))
-                                game.set_status(GameStatus.QUESTION_PHASE)
-                            else: #--------------------------------------------PORTA BOMBA
-                                broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
-                                
-                                if game.check_end():
-                                    broadcast(bytes("%s Ha vinto." %game.check_winner().get_name(), "utf8"))
-                                    game.set_status(GameStatus.ENDED)
-                                else:
+                        
+                        if msg.decode().isnumeric():#-------------------------CHECK INSERIMENTO NUMERICO
+                            if int(msg) == 1 or int(msg) == 2 or int(msg) == 3:
+                                if game.answer_menu(msg): #------------------------PORTA CON DOMANDA
+                                    broadcast(bytes(game.get_question(), "utf8"))
+                                    game.set_status(GameStatus.QUESTION_PHASE)
+                                else: #--------------------------------------------PORTA BOMBA
+                                    broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
                                     game.next_player()
-                                    game.removePlayer(game.get_player(currentPlayer)) #lo rimuove dopo perché altrimenti non riesce a scorrere
-                                    game.set_status(GameStatus.STARTED)
-                                    broadcast(bytes("%s se ne va!." %nome, "utf8"))
-                                    currentPlayer = game.get_current_player().get_name()
-                                    broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
-                                    broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
-                                    game.set_status(GameStatus.MENU_PHASE)
+                                    game.removePlayer(game.get_player(currentPlayer)) #lo rimuove dopo perché altrimenti non riesce a scorrere   
+                                    if game.check_end():
+                                        broadcast(bytes("%s Ha vinto." %game.check_winner().get_name(), "utf8"))
+                                        game.set_status(GameStatus.ENDED)
+                                    else:
+                                        game.set_status(GameStatus.STARTED)
+                                        broadcast(bytes("%s se ne va!." %nome, "utf8"))
+                                        currentPlayer = game.get_current_player().get_name()
+                                        broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
+                                        broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
+                                        game.set_status(GameStatus.MENU_PHASE)
+                            else:
+                                 client.send(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
                         else:
-                            broadcast(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
+                            client.send(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
                             
                     elif gameStatus == GameStatus.QUESTION_PHASE:
                         answer = msg.decode()
                         if game.answer_question(answer):
+                            game.add_pointers()
                             broadcast(bytes("Risposta esatta, punteggio aumentato!", "utf8"))
                         else:
                             broadcast(bytes("Risposta errata!", "utf8"))

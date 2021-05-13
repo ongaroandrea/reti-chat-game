@@ -116,7 +116,7 @@ class Game:
         self.get_current_player().increment_right_answer()
     
     def check_end(self):
-        if len(self.playerList) == 1:
+        if len(self.playerList) == 1: 
             self.gameStatus = GameStatus.ENDED
             return True
         return False
