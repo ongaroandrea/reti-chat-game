@@ -19,10 +19,10 @@ class Game:
         self.playerList = playerList
         self.gameStatus = gameStatus
         self.currentPlayer = currentPlayer
-        self.turn = turn
+        self.turn = turn #num giocatore che deve giocare
         self.question = question
         self.menu = menu
-        self.counter = counter
+        self.counter = counter # contatore turni totali
     
     def set_status(self, status):
         self.gameStatus = status
@@ -51,7 +51,6 @@ class Game:
     def check_player_status(self, name):
         player = self.get_player(name)
         return player.get_status() == PlayerStatus.READY
-    
     
     def start_timer(self, time): # una nuova classe timer?
         timer = threading.Timer(time,self.check_all_players_ready()) # cambiare funzione
@@ -91,19 +90,22 @@ class Game:
         self.playerList.remove(player)
     
     def next_player(self):
-        print( "LUNGHEZZA %i",len(self.playerList))
-        print( "CONT %i",self.counter)
-        if len(self.playerList) == self.counter - 1:
-            self.counter = -1
-            self.turn += 1
-        self.counter += 1
-        self.gameStatus = GameStatus.MENU_PHASE
-        return self.playerList[0] # da modificare, ma non ho capito perchè qui il playerList è grandezza 1 mentre dovrebbe essere due con due giocatori
+        #print("NEXT PLAYER:")
+        #print( "LUNGHEZZA %i" %len(self.playerList))
+        #print( "CONTATORE %i" %self.counter)
+        if self.turn + 1 == len(self.playerList): #sono alla fine del giro, devo riiniziarlo
+            self.turn = -1
+        self.turn += 1 # passo al prossimo giocatore
+        self.counter += 1 # incremento il numero di turni totali
+        self.gameStatus = GameStatus.STARTED #riinizio il ciclo di domande
+        self.currentPlayer = self.playerList[self.turn]
+        #return self.playerList[0] # da modificare, ma non ho capito perchè qui il playerList è grandezza 1 mentre dovrebbe essere due con due giocatori
     
     def answer_menu(self,answer):
         # controllare che sia compresa tra 1 e 3 e che sia un numero
         self.menu.generate_menu()
-        return self.menu.get_correct_choice() == int(answer)
+        print("PORTA CON BOMBA: %i" %self.menu.get_wrong_choice())
+        return self.menu.get_wrong_choice() != int(answer)
             
     def get_question(self):
         self.question.read_question_by_filter("tecnologia")
