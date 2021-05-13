@@ -66,13 +66,12 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             
             if game.get_status() == GameStatus.STARTED:
                 broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
-                #broadcast(bytes("\nDurata Partita: 300 secondi.", "utf8"))
                 game.start_game()
+                # dopo questo non stampa il turno, bisogna scrivere qualcosa in chat
         else:
             broadcast(msg, nome+": ")
         
         currentPlayer = ""
-        gameStatus = game.get_status()
         if gameStatus != GameStatus.NOT_STARTED: # se il gioco è partito
             currentPlayer = game.get_current_player().get_name() # ottengo il nome del giocatore attuale
             
@@ -88,16 +87,18 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                             broadcast(bytes(game.get_question(), "utf8"))
                             game.set_status(GameStatus.QUESTION_PHASE)
                         else:
-                           
                             broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
                             game.removePlayer(game.get_current_player())
+                            if game.check_end():
+                                broadcast(bytes("%s Ha vinto." %game.check_winner().get_name(), "utf8"))
                             game.next_player()
                             game.set_status(GameStatus.STARTED) # non ci va qui
                     else:
                         broadcast(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
                         
                 elif gameStatus == GameStatus.QUESTION_PHASE:
-                    if game.answer_question(msg):
+                    answer = msg.decode()
+                    if game.answer_question(answer):
                         broadcast(bytes("Risposta esatta, punteggio aumentato!", "utf8"))
                     else:
                         broadcast(bytes("Risposta errata!", "utf8"))
@@ -106,8 +107,9 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                     broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
                     broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
                     game.set_status(GameStatus.MENU_PHASE)
-            
-        
+            else:
+                client.send(bytes("Non è il tuo turno", "utf8"))
+    
 """ La funzione, che segue, invia un messaggio in broadcast a tutti i client."""
 def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione del nome.
     for utente in clients:

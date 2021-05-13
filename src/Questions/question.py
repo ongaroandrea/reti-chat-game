@@ -6,7 +6,7 @@ Created on Wed May 12 12:19:12 2021
 """
 
 import json 
-
+import random
 class Question:
     
     def __init__ (self,question = "", answer = "",info = "",listQuestion = []):
@@ -29,8 +29,8 @@ class Question:
         data = json.load(f)
         self.listQuestion = data[filtro]
         
-    def generate_question(self, counter):
-        question = self.listQuestion[counter];
+    def generate_question(self):
+        question = self.listQuestion[random.randint(0, len(self.listQuestion))];
         self.question = question['domanda']
         self.answer = question['risposta']
         self.info = question['info']

@@ -53,14 +53,14 @@ class Game:
         return player.get_status() == PlayerStatus.READY
     
     def start_timer(self, time): # una nuova classe timer?
-        timer = threading.Timer(time,self.check_all_players_ready()) # cambiare funzione
+        timer = threading.Timer(time,self.check_winner())
         timer.start()
         
     def start_game(self):  
         #self.start_timer(2.0)
         self.gameStatus = GameStatus.STARTED
         self.currentPlayer = self.playerList[0]
-        print("CURRENT PLAYA:" + self.playerList[0].get_name())
+        self.question.read_question_by_filter("tecnologia")
     
     def check_all_players_ready(self):
         if len(self.playerList) == 1:
@@ -90,16 +90,12 @@ class Game:
         self.playerList.remove(player)
     
     def next_player(self):
-        #print("NEXT PLAYER:")
-        #print( "LUNGHEZZA %i" %len(self.playerList))
-        #print( "CONTATORE %i" %self.counter)
         if self.turn + 1 == len(self.playerList): #sono alla fine del giro, devo riiniziarlo
             self.turn = -1
         self.turn += 1 # passo al prossimo giocatore
         self.counter += 1 # incremento il numero di turni totali
         self.gameStatus = GameStatus.STARTED #riinizio il ciclo di domande
         self.currentPlayer = self.playerList[self.turn]
-        #return self.playerList[0] # da modificare, ma non ho capito perchè qui il playerList è grandezza 1 mentre dovrebbe essere due con due giocatori
     
     def answer_menu(self,answer):
         # controllare che sia compresa tra 1 e 3 e che sia un numero
@@ -108,11 +104,32 @@ class Game:
         return self.menu.get_wrong_choice() != int(answer)
             
     def get_question(self):
-        self.question.read_question_by_filter("tecnologia")
-        self.question.generate_question(1)
+        self.question.generate_question()
         return self.question.get_question()
     
     def answer_question(self,answer):
         return self.question.get_answer() == answer
 
-        
+    def add_pointers(self):
+        self.get_current_player().add_score(self.turn * 100)
+        self.get_current_player().increment_right_answer()
+    
+    def check_end(self):
+        if len(self.playerList) == 1:
+            self.gameStatus = GameStatus.ENDED
+            return True
+        return False
+    
+    def check_winner(self):
+        winner = ""
+        print(len(self.playerList))
+        for player in self.playerList:
+            if winner == "":
+                winner = player
+            elif winner.get_score() < player.get_score():
+                winner = player
+        self.gameStatus = GameStatus.ENDED
+        return winner
+                
+                
+                
