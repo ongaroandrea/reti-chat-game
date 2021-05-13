@@ -88,6 +88,7 @@ class Game:
         
     def removePlayer(self,player):
         self.playerList.remove(player)
+        self.turn -= 1 #decrementa quando qualcuno muore?
     
     def next_player(self):
         if self.turn + 1 == len(self.playerList): #sono alla fine del giro, devo riiniziarlo
