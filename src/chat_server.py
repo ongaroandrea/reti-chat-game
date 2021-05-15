@@ -94,7 +94,8 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                                     game.next_player()
                                     game.removePlayer(game.get_player(currentPlayer)) #lo rimuove dopo perché altrimenti non riesce a scorrere   
                                     if game.check_end():
-                                        broadcast(bytes("%s Ha vinto." %game.check_winner().get_name(), "utf8"))
+                                        winner = game.check_winner();
+                                        broadcast(bytes("%s Ha vinto." %winner, "utf8"))
                                         game.set_status(GameStatus.ENDED)
                                     else:
                                         game.set_status(GameStatus.STARTED)

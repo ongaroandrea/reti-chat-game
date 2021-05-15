@@ -123,9 +123,9 @@ class Game:
     def check_end(self):
         playersLeft = 0
         for player in self.playerList:
-            if player.get_status == PlayerStatus.PLAYING:
+            if player.get_status() == PlayerStatus.PLAYING:
                 playersLeft += 1
-        print("PLAYERS LEFT: " + playersLeft)
+        print("PLAYERS LEFT: %i" %playersLeft)
         if playersLeft == 1: 
             self.gameStatus = GameStatus.ENDED
             return True
@@ -135,8 +135,8 @@ class Game:
         winner = ""
         #print(len(self.playerList))
         for player in self.playerList:
-            if player.get_status == PlayerStatus.PLAYING:
-                winner = player
+            if player.get_status() == PlayerStatus.PLAYING:
+                winner = player.get_name()
         self.gameStatus = GameStatus.ENDED
         return winner
                 
