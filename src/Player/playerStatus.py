@@ -10,3 +10,5 @@ from enum import Enum
 class PlayerStatus(Enum) :
     NOT_READY = 0
     READY = 1
+    PLAYING = 2
+    DEAD = 3

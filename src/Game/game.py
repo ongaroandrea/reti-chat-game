@@ -75,7 +75,10 @@ class Game:
             if player.get_status() == PlayerStatus.NOT_READY:
                 self.gameStatus = GameStatus.NOT_STARTED #i giocatori non sono tutti pronti
                 return  False
+        # game starts
         self.gameStatus = GameStatus.STARTED
+        for player in self.playerList:
+            player.set_status(PlayerStatus.PLAYING)
         return True
         
     def addPlayerToGameList(self,name):
@@ -87,13 +90,15 @@ class Game:
         self.check_all_players_ready()
         
     def removePlayer(self,player):
-        self.playerList.remove(player)
+        player.set_status(PlayerStatus.DEAD)
         self.turn -= 1 #decrementa quando qualcuno muore?
     
     def next_player(self):
         if self.turn + 1 == len(self.playerList): #sono alla fine del giro, devo riiniziarlo
             self.turn = -1
         self.turn += 1 # passo al prossimo giocatore
+        while self.playerList[self.turn].get_status() == PlayerStatus.DEAD:
+            self.turn +=1 #se un giocatore è morto passo a quello dopo
         self.counter += 1 # incremento il numero di turni totali
         self.gameStatus = GameStatus.STARTED #riinizio il ciclo di domande
         self.currentPlayer = self.playerList[self.turn]
@@ -101,7 +106,7 @@ class Game:
     def answer_menu(self,answer):
         # controllare che sia compresa tra 1 e 3 e che sia un numero
         self.menu.generate_menu()
-        print("PORTA CON BOMBA: %i" %self.menu.get_wrong_choice())
+        #print("PORTA CON BOMBA: %i" %self.menu.get_wrong_choice())
         return self.menu.get_wrong_choice() != int(answer)
             
     def get_question(self):
@@ -116,18 +121,21 @@ class Game:
         self.get_current_player().increment_right_answer()
     
     def check_end(self):
-        if len(self.playerList) == 1: 
+        playersLeft = 0
+        for player in self.playerList:
+            if player.get_status == PlayerStatus.PLAYING:
+                playersLeft += 1
+        print("PLAYERS LEFT: " + playersLeft)
+        if playersLeft == 1: 
             self.gameStatus = GameStatus.ENDED
             return True
         return False
     
     def check_winner(self):
         winner = ""
-        print(len(self.playerList))
+        #print(len(self.playerList))
         for player in self.playerList:
-            if winner == "":
-                winner = player
-            elif winner.get_score() < player.get_score():
+            if player.get_status == PlayerStatus.PLAYING:
                 winner = player
         self.gameStatus = GameStatus.ENDED
         return winner
