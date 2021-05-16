@@ -139,6 +139,13 @@ class Game:
                 winner = player.get_name()
         self.gameStatus = GameStatus.ENDED
         return winner
-                
+    
+    def reset_all(self):
+        for player in self.playerList:
+            player.set_status(PlayerStatus.NOT_READY)
+        self.gameStatus = GameStatus.NOT_STARTED
+    
+    def get_scoreboard(self):
+        return self.playerList.sort(key=lambda p: p.get_score())
                 
                 

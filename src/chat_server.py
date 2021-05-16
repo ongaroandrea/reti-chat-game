@@ -97,6 +97,17 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                                         winner = game.check_winner();
                                         broadcast(bytes("%s Ha vinto." %winner, "utf8"))
                                         game.set_status(GameStatus.ENDED)
+                                        #stampa classifica
+                                        playersList = game.get_players()
+                                        broadcast(bytes("\nGioco Terminato. Classifica:", "utf8"))
+                                        i = 0
+                                        playersList.sort(key=lambda p: p.get_score())
+                                        for player in playersList:
+                                            i += 1
+                                            broadcast(bytes("\n{}°: {}, {}\n".format(i, player.get_name(), player.get_score()), "utf8"))
+                                        #reset gioco
+                                        game.reset_all()
+                                        broadcast(bytes("Premi Pronto per giocare ad una nuova partita!", "utf8"))
                                     else:
                                         game.set_status(GameStatus.STARTED)
                                         broadcast(bytes("%s se ne va!." %nome, "utf8"))
