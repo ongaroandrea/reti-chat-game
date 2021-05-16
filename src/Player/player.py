@@ -42,6 +42,9 @@ class Player :
     
     def add_score(self,val):
         self.score += val
+        
+    def remove_score(self,val):
+        self.score -= val
     
     def increment_right_answer(self):
         self.rightAnswers += 1

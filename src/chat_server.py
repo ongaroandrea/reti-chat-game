@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
+"""
+Created on Sat May  8 19:17:36 2021
 
+@author: Gruppo Carboni - Ongaro
+
+"""
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 
 from Game.game import Game
 from Game.gameStatus import GameStatus
-
-import random
-
+import time as tm 
 START = bytes("{start}", "utf8")
 QUIT = bytes("{quit}", "utf8")
 
@@ -60,7 +63,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             break
         elif msg == START and gameStatus != GameStatus.NOT_STARTED: #----------START SE GIA COMINCIATO
             client.send(bytes("Gioco già cominciato!", "utf8"))
-        elif msg == START and game.check_player_status(nome): #----------------START SE GIA PRONTO
+        elif msg == START and game.check_player_ready(nome): #----------------START SE GIA PRONTO
             client.send(bytes('Ti sei già dichiarato pronto', "utf8"))
         elif msg == START and gameStatus != GameStatus.STARTED: #--------------START
             game.setPlayerReady(nome)
@@ -92,19 +95,20 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                                 else: #--------------------------------------------PORTA BOMBA
                                     broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
                                     game.next_player()
-                                    game.removePlayer(game.get_player(currentPlayer)) #lo rimuove dopo perché altrimenti non riesce a scorrere   
+                                    game.removePlayer(game.get_player(currentPlayer)) 
                                     if game.check_end():
                                         winner = game.check_winner();
                                         broadcast(bytes("%s Ha vinto." %winner, "utf8"))
+                                        tm.sleep(1)
                                         game.set_status(GameStatus.ENDED)
                                         #stampa classifica
-                                        playersList = game.get_players()
                                         broadcast(bytes("\nGioco Terminato. Classifica:", "utf8"))
                                         i = 0
-                                        playersList.sort(key=lambda p: p.get_score())
-                                        for player in playersList:
+                                        rank = game.get_rank()
+                                        for player in rank:
                                             i += 1
                                             broadcast(bytes("\n{}°: {}, {}\n".format(i, player.get_name(), player.get_score()), "utf8"))
+                                            tm.sleep(1)
                                         #reset gioco
                                         game.reset_all()
                                         broadcast(bytes("Premi Pronto per giocare ad una nuova partita!", "utf8"))
@@ -123,7 +127,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                     elif gameStatus == GameStatus.QUESTION_PHASE:
                         answer = msg.decode()
                         if game.answer_question(answer):
-                            game.add_pointers()
+                            game.add_points()
                             broadcast(bytes("Risposta esatta, punteggio aumentato!", "utf8"))
                         else:
                             broadcast(bytes("Risposta errata!", "utf8"))

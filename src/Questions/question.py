@@ -9,7 +9,7 @@ import json
 import random
 class Question:
     
-    def __init__ (self,question = "", answer = "",info = "",listQuestion = []):
+    def __init__ (self,question = "", answer = "", info = "", listQuestion = []) :
          self.question = question
          self.answer = answer
          self.info = info
@@ -17,11 +17,11 @@ class Question:
     
     def get_question(self):
         return self.question
-    
-    def get_answer(self) : 
+     
+    def get_answer(self): 
         return self.answer
 
-    def get_info(self) :
+    def get_info(self):
         return self.info
     
     def read_question_by_filter(self,filtro):

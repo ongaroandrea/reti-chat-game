@@ -14,7 +14,7 @@ import threading
 class Game:
     
     def __init__ (self,gameStatus = GameStatus.NOT_STARTED, playerList = [], 
-                  currentPlayer = None,turn = 0, question = Question(), menu = Menu(), counter = 0) :
+                  currentPlayer = None,turn = 0, question = Question(), menu = Menu(), round_number = 0) :
         
         self.playerList = playerList
         self.gameStatus = gameStatus
@@ -22,7 +22,7 @@ class Game:
         self.turn = turn #num giocatore che deve giocare
         self.question = question
         self.menu = menu
-        self.counter = counter # contatore turni totali
+        self.round_number = round_number # contatore turni totali
     
     def set_status(self, status):
         self.gameStatus = status
@@ -35,11 +35,8 @@ class Game:
     
     def get_current_player(self):
         return self.currentPlayer
-
-    def get_player_by_index(self, index):
-        return self.playerList[index]
     
-    def check_name_player(self, name):
+    def check_name_player(self, name): #unused
         return self.get_player(name) != None
     
     def get_player(self,name):
@@ -48,11 +45,10 @@ class Game:
                 return player
         return None
 
-    def check_player_status(self, name):
-        player = self.get_player(name)
-        return player.get_status() == PlayerStatus.READY
+    def check_player_ready(self, name):
+        return self.get_player(name).get_status() == PlayerStatus.READY
     
-    def start_timer(self, time): # una nuova classe timer?
+    def start_timer(self, time):
         timer = threading.Timer(time,self.check_winner())
         timer.start()
         
@@ -62,13 +58,14 @@ class Game:
         self.currentPlayer = self.playerList[0]
         self.question.read_question_by_filter("tecnologia")
     
-    def check_all_players_ready(self):
+    # Declaring private method
+    def _check_all_players_ready(self):
         if len(self.playerList) == 1:
             self.gameStatus = GameStatus.NOT_STARTED #non si può giocare da soli
-            return False
         
         if self.gameStatus == GameStatus.STARTED:
             #impossibile far partire un'altra partita quando è già partita una ??????
+            #CONTROLLA QUESTA COSA
             return False
         
         for player in self.playerList:
@@ -79,32 +76,29 @@ class Game:
         self.gameStatus = GameStatus.STARTED
         for player in self.playerList:
             player.set_status(PlayerStatus.PLAYING)
-        return True
         
     def addPlayerToGameList(self,name):
-        self.playerList.append(Player(name,"role"))
+        self.playerList.append(Player(name,"role")) # ottenere un ruolo casuale
         
     def setPlayerReady(self, name):
-        player = self.get_player(name)
-        player.set_status(PlayerStatus.READY)
-        self.check_all_players_ready()
+        self.get_player(name).set_status(PlayerStatus.READY)
+        self._check_all_players_ready()
         
     def removePlayer(self,player):
         player.set_status(PlayerStatus.DEAD)
-        self.turn -= 1 #decrementa quando qualcuno muore?
-    
+        #self.turn -= 1 decrementa quando qualcuno muore?
+            
     def next_player(self):
         if self.turn + 1 == len(self.playerList): #sono alla fine del giro, devo riiniziarlo
             self.turn = -1
         self.turn += 1 # passo al prossimo giocatore
         while self.playerList[self.turn].get_status() == PlayerStatus.DEAD:
             self.turn +=1 #se un giocatore è morto passo a quello dopo
-        self.counter += 1 # incremento il numero di turni totali
+        self.round_number += 1 # incremento il numero di round totali
         self.gameStatus = GameStatus.STARTED #riinizio il ciclo di domande
         self.currentPlayer = self.playerList[self.turn]
     
     def answer_menu(self,answer):
-        # controllare che sia compresa tra 1 e 3 e che sia un numero
         self.menu.generate_menu()
         #print("PORTA CON BOMBA: %i" %self.menu.get_wrong_choice())
         return self.menu.get_wrong_choice() != int(answer)
@@ -116,9 +110,12 @@ class Game:
     def answer_question(self,answer):
         return self.question.get_answer() == answer
 
-    def add_pointers(self):
-        self.get_current_player().add_score(self.turn * 100)
+    def add_points(self):
+        self.get_current_player().add_score(self.round_number * 100)
         self.get_current_player().increment_right_answer()
+    
+    def remove_points(self):
+        self.get_current_player().remove_score(100)
     
     def check_end(self):
         playersLeft = 0
@@ -133,7 +130,6 @@ class Game:
     
     def check_winner(self):
         winner = ""
-        #print(len(self.playerList))
         for player in self.playerList:
             if player.get_status() == PlayerStatus.PLAYING:
                 winner = player.get_name()
@@ -145,7 +141,8 @@ class Game:
             player.set_status(PlayerStatus.NOT_READY)
         self.gameStatus = GameStatus.NOT_STARTED
     
-    def get_scoreboard(self):
-        return self.playerList.sort(key=lambda p: p.get_score())
+    def get_rank(self):
+        #Devo ottenere in ordine la lista delle persone che se ne sono andate
+        self.playerList.sort(key=lambda p: (p.get_score(), p.get_status() != PlayerStatus.DEAD ) )
                 
                 
