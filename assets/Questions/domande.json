@@ -242,7 +242,7 @@
     },
     {
       "domanda": "Invece di pixel, la grafica vettoriale è composta da cosa ?: \n (a) Punti \n (b) Bitmap \n (c) Blocchi \n (d) Percorsi \n",
-      "rispondi": "d",
+      "risposta": "d",
       "info": "A differenza delle immagini JPEG, GIF e BMP, la grafica vettoriale non è composta da una griglia di pixel. Invece, la grafica vettoriale è composta da percorsi, che sono definiti da un punto iniziale e finale, insieme ad altri punti, curve e angoli lungo il percorso. Un tracciato può essere una linea, un quadrato, un triangolo o una forma sinuosa. Questi tracciati possono essere utilizzati per creare disegni semplici o diagrammi complessi. I tracciati possono anche essere utilizzati per definire i caratteri di caratteri tipografici specifici."
     },
     {
