@@ -10,7 +10,6 @@ from Player.playerStatus import PlayerStatus
 from Player.playerRole import PlayerRole
 from Questions.question import Question
 from Menu.menu import Menu
-import threading
 
 class Game:
     

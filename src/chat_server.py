@@ -11,8 +11,6 @@ import threading
 from Game.game import Game
 from Game.gameStatus import GameStatus
 import time as tm 
-START = bytes("{start}", "utf8")
-QUIT = bytes("{quit}", "utf8")
 
 """ La funzione che segue accetta le connessioni  dei client in entrata."""
 def accetta_connessioni_in_entrata():
@@ -77,7 +75,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             if game.get_status() == GameStatus.STARTED:
                 broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
                 game.start_game()
-                start_timer(4.0)
+                timerGame = start_timer(60.0, end_function())
         else: #----------------------------------------------------------------BROADCAST MESSAGGIO (NO COMANDO)
             broadcast(msg, nome+": ")
         
@@ -93,32 +91,19 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             else:
                 if currentPlayer == nome: #check giocatore
                     if gameStatus == GameStatus.MENU_PHASE: #------------------PORTA SCELTA
-                        
                         if msg.decode().isnumeric():#-------------------------CHECK INSERIMENTO NUMERICO
                             if int(msg) == 1 or int(msg) == 2 or int(msg) == 3:
                                 if game.answer_menu(msg): #------------------------PORTA CON DOMANDA
                                     broadcast(bytes(game.get_question(), "utf8"))
+                                    start_timer(5.0, stop_time_answer())
                                     game.set_status(GameStatus.QUESTION_PHASE)
                                 else: #--------------------------------------------PORTA BOMBA
                                     broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
                                     game.next_player()
                                     game.removePlayer(game.get_player(currentPlayer)) 
                                     if game.check_end():
-                                        rank = game.get_rank()
-                                        winner = game.get_players()[0]
-                                        broadcast(bytes("%s Ha vinto." %winner.get_name(), "utf8"))
-                                        tm.sleep(1)
-                                        #game.set_status(GameStatus.ENDED)
-                                        #stampa classifica
-                                        broadcast(bytes("\nGioco Terminato. Classifica:", "utf8"))
-                                        i = 0
-                                        for player in rank:
-                                            i += 1
-                                            broadcast(bytes("\n{}°: {}, {}\n".format(i, player.get_name(), player.get_score()), "utf8"))
-                                            tm.sleep(1)
-                                        #reset gioco
-                                        game.reset_all()
-                                        broadcast(bytes("Premi Pronto per giocare ad una nuova partita!", "utf8"))
+                                        timerGame.stop()
+                                        end_function()
                                     else:
                                         game.set_status(GameStatus.STARTED)
                                         broadcast(bytes("%s se ne va!." %nome, "utf8"))
@@ -151,14 +136,36 @@ def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione d
     for utente in clients:
         utente.send(bytes(prefisso, "utf8")+msg)
 
-def start_timer(time):
-    timer = threading.Timer(time,lambda: print_winner())
+def start_timer(time, function):
+    timer = threading.Timer(time, function)
     timer.start()
+    return timer
     
 def print_winner():
    for p in game.get_players():
        print(p.get_name())
-       
+
+def stop_time_answer(timer):
+    broadcast(bytes("Tempo Scaduto per rispondere", "utf8"))
+    game.set_status(GameStatus.MENU_PHASE)
+    
+def end_function():
+    rank = game.get_players() # getrank ma è vuoto adesso
+    winner = game.get_players()[0]
+    broadcast(bytes("%s Ha vinto." %winner.get_name(), "utf8"))
+    tm.sleep(1)
+    game.set_status(GameStatus.ENDED)
+    ##stampa classifica
+    broadcast(bytes("\nGioco Terminato. Classifica:", "utf8"))
+    i = 0
+    for player in rank:
+        i += 1
+        broadcast(bytes("\n{}°: {}, {}\n".format(i, player.get_name(), player.get_score()), "utf8"))
+        tm.sleep(1)
+    #reset gioco
+    game.reset_all()
+    broadcast(bytes("Premi Pronto per giocare ad una nuova partita!", "utf8"))
+
 clients = {}
 indirizzi = {}
 HOST = ''
@@ -166,6 +173,8 @@ PORT = 53000
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 game = Game()
+START = bytes("{start}", "utf8")
+QUIT = bytes("{quit}", "utf8")
 SERVER = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)
 
