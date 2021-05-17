@@ -7,13 +7,14 @@ Created on Sat May  8 19:17:36 2021
 from Game.gameStatus import GameStatus
 from Player.player import Player
 from Player.playerStatus import PlayerStatus
+from Player.playerRole import PlayerRole
 from Questions.question import Question
 from Menu.menu import Menu
 import threading
 
 class Game:
     
-    def __init__ (self,gameStatus = GameStatus.NOT_STARTED, playerList = [], 
+    def __init__ (self, gameStatus = GameStatus.NOT_STARTED, playerList = [], 
                   currentPlayer = None,turn = 0, question = Question(), menu = Menu(), round_number = 0) :
         
         self.playerList = playerList
@@ -47,13 +48,8 @@ class Game:
 
     def check_player_ready(self, name):
         return self.get_player(name).get_status() == PlayerStatus.READY
-    
-    def start_timer(self, time):
-        timer = threading.Timer(time,self.check_winner())
-        timer.start()
         
-    def start_game(self):  
-        #self.start_timer(2.0)
+    def start_game(self):
         self.gameStatus = GameStatus.STARTED
         self.currentPlayer = self.playerList[0]
         self.question.read_question_by_filter("tecnologia")
@@ -62,23 +58,23 @@ class Game:
     def _check_all_players_ready(self):
         if len(self.playerList) == 1:
             self.gameStatus = GameStatus.NOT_STARTED #non si può giocare da soli
-        
+            return 
         if self.gameStatus == GameStatus.STARTED:
             #impossibile far partire un'altra partita quando è già partita una ??????
             #CONTROLLA QUESTA COSA
-            return False
+            return #False
         
         for player in self.playerList:
             if player.get_status() == PlayerStatus.NOT_READY:
                 self.gameStatus = GameStatus.NOT_STARTED #i giocatori non sono tutti pronti
-                return  False
+                return 
         # game starts
         self.gameStatus = GameStatus.STARTED
         for player in self.playerList:
             player.set_status(PlayerStatus.PLAYING)
         
     def addPlayerToGameList(self,name):
-        self.playerList.append(Player(name,"role")) # ottenere un ruolo casuale
+        self.playerList.append(Player(name, PlayerRole(len(self.playerList) % 4 ) ))
         
     def setPlayerReady(self, name):
         self.get_player(name).set_status(PlayerStatus.READY)
@@ -130,7 +126,7 @@ class Game:
     
     def check_winner(self):
         winner = ""
-        for player in self.playerList:
+        for player in self.get_rank():
             if player.get_status() == PlayerStatus.PLAYING:
                 winner = player.get_name()
         self.gameStatus = GameStatus.ENDED
@@ -145,4 +141,6 @@ class Game:
         #Devo ottenere in ordine la lista delle persone che se ne sono andate
         self.playerList.sort(key=lambda p: (p.get_score(), p.get_status() != PlayerStatus.DEAD ) )
                 
-                
+    def method_t(self):
+        for player in self.playerList:
+            print(player.get_role())

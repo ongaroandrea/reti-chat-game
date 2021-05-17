@@ -7,7 +7,7 @@ Created on Sat May  8 19:17:36 2021
 """
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
-
+import threading 
 from Game.game import Game
 from Game.gameStatus import GameStatus
 import time as tm 
@@ -24,6 +24,10 @@ def accetta_connessioni_in_entrata():
              client.send(bytes("Il gioco è attualmente in esecuzione - RIPROVA PIU' TARDI", "utf8"))
         else: 
             client.send(bytes("Salve! Digita il tuo Nome seguito dal tasto Invio!", "utf8"))
+            if len(game.get_players()) > 0:
+                client.send(bytes("Sono già presenti i seguenti giocatori: \n", "utf8"))
+                for player in game.get_players():
+                    client.send(bytes(player.get_name() + " \n", "utf8"))
             # ci serviamo di un dizionario per registrare i client
             indirizzi[client] = client_address
             #diamo inizio all'attività del Thread - uno per ciascun client
@@ -63,14 +67,17 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             break
         elif msg == START and gameStatus != GameStatus.NOT_STARTED: #----------START SE GIA COMINCIATO
             client.send(bytes("Gioco già cominciato!", "utf8"))
+            #Non deve proseguire
         elif msg == START and game.check_player_ready(nome): #----------------START SE GIA PRONTO
             client.send(bytes('Ti sei già dichiarato pronto', "utf8"))
+            #Non deve proseguire
         elif msg == START and gameStatus != GameStatus.STARTED: #--------------START
             game.setPlayerReady(nome)
             broadcast(bytes("Il giocatore %s è pronto" % nome, "utf8"))
             if game.get_status() == GameStatus.STARTED:
                 broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
                 game.start_game()
+                start_timer(4.0)
         else: #----------------------------------------------------------------BROADCAST MESSAGGIO (NO COMANDO)
             broadcast(msg, nome+": ")
         
@@ -97,14 +104,14 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                                     game.next_player()
                                     game.removePlayer(game.get_player(currentPlayer)) 
                                     if game.check_end():
-                                        winner = game.check_winner();
-                                        broadcast(bytes("%s Ha vinto." %winner, "utf8"))
+                                        rank = game.get_rank()
+                                        winner = game.get_players()[0]
+                                        broadcast(bytes("%s Ha vinto." %winner.get_name(), "utf8"))
                                         tm.sleep(1)
-                                        game.set_status(GameStatus.ENDED)
+                                        #game.set_status(GameStatus.ENDED)
                                         #stampa classifica
                                         broadcast(bytes("\nGioco Terminato. Classifica:", "utf8"))
                                         i = 0
-                                        rank = game.get_rank()
                                         for player in rank:
                                             i += 1
                                             broadcast(bytes("\n{}°: {}, {}\n".format(i, player.get_name(), player.get_score()), "utf8"))
@@ -144,6 +151,14 @@ def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione d
     for utente in clients:
         utente.send(bytes(prefisso, "utf8")+msg)
 
+def start_timer(time):
+    timer = threading.Timer(time,lambda: print_winner())
+    timer.start()
+    
+def print_winner():
+   for p in game.get_players():
+       print(p.get_name())
+       
 clients = {}
 indirizzi = {}
 HOST = ''

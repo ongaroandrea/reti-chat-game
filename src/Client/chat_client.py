@@ -93,5 +93,5 @@ client_socket.connect(ADDR)
 receive_thread = Thread(target=receive)
 receive_thread.start()
 
-finestra.geometry("1280x720")
+finestra.geometry("720x720")
 tkt.mainloop()
