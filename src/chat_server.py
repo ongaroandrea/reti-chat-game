@@ -50,6 +50,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     broadcast(bytes("%s si è unito alla chat!" % nome, "utf8"))
     
     clients[client] = nome
+    global timerGame
     
     #si mette in ascolto del thread del singolo client e ne gestisce l'invio dei messaggi o l'uscita dalla Chat
     while True:
@@ -75,7 +76,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             if game.get_status() == GameStatus.STARTED:
                 broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
                 game.start_game()
-                timerGame = start_timer(60.0, end_function())
+                timerGame = start_countdown(50)
         else: #----------------------------------------------------------------BROADCAST MESSAGGIO (NO COMANDO)
             broadcast(msg, nome+": ")
         
@@ -95,14 +96,12 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                             if int(msg) == 1 or int(msg) == 2 or int(msg) == 3:
                                 if game.answer_menu(msg): #------------------------PORTA CON DOMANDA
                                     broadcast(bytes(game.get_question(), "utf8"))
-                                    start_timer(5.0, stop_time_answer())
                                     game.set_status(GameStatus.QUESTION_PHASE)
                                 else: #--------------------------------------------PORTA BOMBA
                                     broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
                                     game.next_player()
                                     game.removePlayer(game.get_player(currentPlayer)) 
                                     if game.check_end():
-                                        timerGame.stop()
                                         end_function()
                                     else:
                                         game.set_status(GameStatus.STARTED)
@@ -136,10 +135,20 @@ def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione d
     for utente in clients:
         utente.send(bytes(prefisso, "utf8")+msg)
 
-def start_timer(time, function):
-    timer = threading.Timer(time, function)
-    timer.start()
-    return timer
+def countdown(duration):
+    while duration > 0:
+        tm.sleep(1)
+        duration -= 1
+        print(duration)
+    #timer ended - end function
+    end_function()
+    
+    
+def start_countdown(duration):
+    countdown_thread = threading.Thread(target=countdown, args=(duration,))
+    countdown_thread.daemon = True #rendo il thread deamon, alla chiusura del server morirà
+    countdown_thread.start()
+    return countdown_thread
     
 def print_winner():
    for p in game.get_players():
