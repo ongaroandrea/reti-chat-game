@@ -51,6 +51,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     
     clients[client] = nome
     global timerGame
+    global gameStatus
     
     #si mette in ascolto del thread del singolo client e ne gestisce l'invio dei messaggi o l'uscita dalla Chat
     while True:
@@ -76,7 +77,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             if game.get_status() == GameStatus.STARTED:
                 broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
                 game.start_game()
-                timerGame = start_countdown(50)
+                timerGame = start_countdown(50, end_function)
         else: #----------------------------------------------------------------BROADCAST MESSAGGIO (NO COMANDO)
             broadcast(msg, nome+": ")
         
@@ -102,7 +103,9 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                                     game.next_player()
                                     game.removePlayer(game.get_player(currentPlayer)) 
                                     if game.check_end():
-                                        end_function()
+                                        #end_function()
+                                        game.set_status(GameStatus.ENDED)
+                                        gameStatus = GameStatus.ENDED
                                     else:
                                         game.set_status(GameStatus.STARTED)
                                         broadcast(bytes("%s se ne va!." %nome, "utf8"))
@@ -135,17 +138,18 @@ def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione d
     for utente in clients:
         utente.send(bytes(prefisso, "utf8")+msg)
 
-def countdown(duration):
-    while duration > 0:
+def countdown(duration, function):
+    while duration > 0 and gameStatus != GameStatus.ENDED: #il countdown si ferma quando finisce i secondi o quando il gioco termina
         tm.sleep(1)
         duration -= 1
         print(duration)
+        print("GAME STATUS: {}".format(gameStatus))
     #timer ended - end function
-    end_function()
+    function()
     
     
-def start_countdown(duration):
-    countdown_thread = threading.Thread(target=countdown, args=(duration,))
+def start_countdown(duration, function):
+    countdown_thread = threading.Thread(target=countdown, args=(duration, function,))
     countdown_thread.daemon = True #rendo il thread deamon, alla chiusura del server morirà
     countdown_thread.start()
     return countdown_thread
