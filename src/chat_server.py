@@ -51,7 +51,9 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     
     clients[client] = nome
     global timerGame
+    global timerQuestion
     global gameStatus
+    global currentPlayer
     
     #si mette in ascolto del thread del singolo client e ne gestisce l'invio dei messaggi o l'uscita dalla Chat
     while True:
@@ -77,7 +79,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             if game.get_status() == GameStatus.STARTED:
                 broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
                 game.start_game()
-                timerGame = start_countdown(50, end_function)
+                timerGame = start_countdown(50, GameStatus.ENDED, True, None, end_function)
         else: #----------------------------------------------------------------BROADCAST MESSAGGIO (NO COMANDO)
             broadcast(msg, nome+": ")
         
@@ -98,12 +100,14 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                                 if game.answer_menu(msg): #------------------------PORTA CON DOMANDA
                                     broadcast(bytes(game.get_question(), "utf8"))
                                     game.set_status(GameStatus.QUESTION_PHASE)
+                                    gameStatus = GameStatus.QUESTION_PHASE
+                                    timerQuestion = start_countdown(5, GameStatus.MENU_PHASE, False, GameStatus.QUESTION_PHASE, stop_time_answer)
                                 else: #--------------------------------------------PORTA BOMBA
                                     broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
                                     game.next_player()
                                     game.removePlayer(game.get_player(currentPlayer)) 
                                     if game.check_end():
-                                        #end_function()
+                                        
                                         game.set_status(GameStatus.ENDED)
                                         gameStatus = GameStatus.ENDED
                                     else:
@@ -113,6 +117,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                                         broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
                                         broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
                                         game.set_status(GameStatus.MENU_PHASE)
+                                        gameStatus = GameStatus.MENU_PHASE
                             else:
                                  client.send(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
                         else:
@@ -138,18 +143,25 @@ def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione d
     for utente in clients:
         utente.send(bytes(prefisso, "utf8")+msg)
 
-def countdown(duration, function):
-    while duration > 0 and gameStatus != GameStatus.ENDED: #il countdown si ferma quando finisce i secondi o quando il gioco termina
+def countdown(duration, quitStatus, alwaysDo, doStatus, function):
+    thisQuestionPlayer = currentPlayer
+    
+    #il countdown si ferma quando finisce i secondi o quando il gioco arriva allo stato definito
+    while duration > 0 and gameStatus != quitStatus: 
         tm.sleep(1)
         duration -= 1
         print(duration)
-        print("GAME STATUS: {}".format(gameStatus))
-    #timer ended - end function
-    function()
+    #timer ended - eseguo la funzione specificata quando il flag alwaysDo è true
+    #oppure quando sono in doStatus ed il giocatore è lo stesso
+    if alwaysDo: 
+        function()
+    else:
+        if gameStatus == doStatus and thisQuestionPlayer == currentPlayer:
+            function()
     
     
-def start_countdown(duration, function):
-    countdown_thread = threading.Thread(target=countdown, args=(duration, function,))
+def start_countdown(duration, quitStatus, alwaysDo, doStatus, function):
+    countdown_thread = threading.Thread(target=countdown, args=(duration, quitStatus, alwaysDo, doStatus, function,))
     countdown_thread.daemon = True #rendo il thread deamon, alla chiusura del server morirà
     countdown_thread.start()
     return countdown_thread
@@ -158,9 +170,14 @@ def print_winner():
    for p in game.get_players():
        print(p.get_name())
 
-def stop_time_answer(timer):
+def stop_time_answer():
     broadcast(bytes("Tempo Scaduto per rispondere", "utf8"))
+    game.next_player()
+    currentPlayer = game.get_current_player().get_name()
+    broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
+    broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
     game.set_status(GameStatus.MENU_PHASE)
+    gameStatus = GameStatus.MENU_PHASE
     
 def end_function():
     rank = game.get_players() # getrank ma è vuoto adesso
