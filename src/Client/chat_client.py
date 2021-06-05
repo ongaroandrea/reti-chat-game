@@ -3,95 +3,229 @@
 
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
-import tkinter as tkt
+from tkinter import *
+from tkinter import font
 from tkinter import ttk
 
-"""La funzione che segue ha il compito di gestire la ricezione dei messaggi."""
-def receive():
-    while True:
-        try:
-            #quando viene chiamata la funzione receive, si mette in ascolto dei messaggi che
-            #arrivano sul socket
-            msg = client_socket.recv(BUFSIZ).decode("utf8")
-            #visualizziamo l'elenco dei messaggi sullo schermo
-            #e facciamo in modo che il cursore sia visibile al termine degli stessi
-            msg_list.insert(tkt.END, msg)
-            # Nel caso di errore e' probabile che il client abbia abbandonato la chat.
-        except OSError:  
-            break
+class GUI:
+    # constructor method
+    def __init__(self):
+        
+        # chat window which is currently hidden
+        self.Window = Tk()
+        self.Window.withdraw()
+        
+        # login window
+        self.login = Toplevel()
+        # set the title
+        self.login.title("Login")
+        self.login.resizable(width = False,
+                            height = False)
+        self.login.configure(width = 400,
+                            height = 300)
+        # create a Label
+        self.pls = Label(self.login,
+                    text = "Please login to continue",
+                    justify = CENTER,
+                    font = "Helvetica 14 bold")
+        
+        self.pls.place(relheight = 0.15,
+                    relx = 0.2,
+                    rely = 0.07)
+        # create a Label
+        self.labelName = Label(self.login,
+                            text = "Name: ",
+                            font = "Helvetica 12")
+        
+        self.labelName.place(relheight = 0.2,
+                            relx = 0.1,
+                            rely = 0.2)
+        
+        # create a entry box for
+        # tyoing the message
+        self.entryName = Entry(self.login,
+                            font = "Helvetica 14")
+        
+        self.entryName.place(relwidth = 0.4,
+                            relheight = 0.12,
+                            relx = 0.35,
+                            rely = 0.2)
+        
+        # set the focus of the curser
+        self.entryName.focus()
+        
+        # create a Continue Button
+        # along with action
+        self.go = Button(self.login,
+                        text = "CONTINUE",
+                        font = "Helvetica 14 bold",
+                        command = lambda: self.goAhead(self.entryName.get()))
+        
+        self.go.place(relx = 0.4,
+                    rely = 0.55)
+        self.Window.mainloop()
 
-"""La funzione che segue gestisce l'invio dei messaggi."""
-def send(event=None):
-    # gli eventi vengono passati dai binders.
-    msg = my_msg.get()
-    # libera la casella di input.
-    my_msg.set("")
-    # invia il messaggio sul socket
-    client_socket.send(bytes(msg, "utf8"))
-    if msg == "{quit}":
-        client_socket.close()
-        finestra.quit()
-        finestra.destroy()
+    def goAhead(self, name):
+        print(name)
+        client_socket.send(bytes(name,FORMAT))
+        self.login.destroy()
+        self.layout(name)
+        
+        # the thread to receive messages
+        rcv = Thread(target=self.receive)
+        rcv.start()
 
-"""La funzione che segue viene invocata quando viene chiusa la finestra della chat."""
-def on_closing(event=None):
-    my_msg.set("{quit}")
-    send()
+    # The main layout of the chat
+    def layout(self,name):
+        
+        self.name = name
+        # to show chat window
+        self.Window.deiconify()
+        self.Window.title("CHAT GAME")
+        self.Window.resizable(width = False,
+                            height = False)
+        self.Window.configure(width = 470,
+                            height = 550,
+                            bg = "#17202A")
+        
+        self.labelHead = Label(self.Window,
+                            bg = "#17202A",
+                            fg = "#EAECEE",
+                            text = self.name ,
+                            font = "Helvetica 13 bold",
+                            pady = 5)
+        
+        self.labelHead.place(relwidth = 1)
+        self.line = Label(self.Window,
+                        width = 450,
+                        bg = "#ABB2B9")
+        
+        self.line.place(relwidth = 1,
+                        rely = 0.07,
+                        relheight = 0.012)
+        
+        self.textCons = Text(self.Window,
+                            width = 20,
+                            height = 2,
+                            bg = "#17202A",
+                            fg = "#EAECEE",
+                            font = "Helvetica 14",
+                            padx = 5,
+                            pady = 5)
+        
+        self.textCons.place(relheight = 0.745,
+                            relwidth = 1,
+                            rely = 0.08)
+        
+        self.labelBottom = Label(self.Window,
+                                bg = "#ABB2B9",
+                                height = 80)
+        
+        self.labelBottom.place(relwidth = 1,
+                            rely = 0.825)
+        
+        self.entryMsg = Entry(self.labelBottom,
+                            bg = "#2C3E50",
+                            fg = "#EAECEE",
+                            font = "Helvetica 13")
+        
+        # place the given widget
+        # into the gui window
+        self.entryMsg.place(relwidth = 0.74,
+                            relheight = 0.06,
+                            rely = 0.008,
+                            relx = 0.011)
+        
+        self.entryMsg.focus()
+        
+        # create a Send Button
+        self.buttonMsg = Button(self.labelBottom,
+                                text = "Send",
+                                font = "Helvetica 10 bold",
+                                width = 20,
+                                bg = "#ABB2B9",
+                                command = self.sendButton(self.entryMsg.get()))
+        
+        self.buttonMsg.place(relx = 0.77,
+                            rely = 0.008,
+                            relheight = 0.03,
+                            relwidth = 0.22)
+        
+        self.readyBtn = Button(self.labelBottom,
+                                text = "Pronto",
+                                font = "Helvetica 10 bold",
+                                width = 20,
+                                bg = "#ABB2B9",
+                                command = self.ready)
+        
+        self.readyBtn.place(relx = 0.77,
+                            rely = 0.040,
+                            relheight = 0.03,
+                            relwidth = 0.22)
+        
+        self.textCons.config(cursor = "arrow")
+        
+        # create a scroll bar
+        scrollbar = Scrollbar(self.textCons)
+        
+        # place the scroll bar
+        # into the gui window
+        scrollbar.place(relheight = 1,
+                        relx = 0.974)
+        
+        scrollbar.config(command = self.textCons.yview)
+        
+        self.textCons.config(state = DISABLED)
 
-def ready(event=None):
-    my_msg.set("{start}")
-    send()
+    # function to basically start the thread for sending messages
+    def sendButton(self, msg):
+        self.textCons.config(state = DISABLED)
+        self.msg = msg
+        self.entryMsg.delete(0, END)
+        client_socket.send(bytes(self.msg, FORMAT))
+        if self.msg == "{quit}":
+            client_socket.close()
+            #finestra.quit()
+            #finestra.destroy()
 
-finestra = tkt.Tk()
-finestra.title("Chat Game")
+    # function to receive messages
+    def receive(self):
+        while True:
+            try:
+                message = client_socket.recv(1024).decode(FORMAT)
+                
+                # if the messages from the server is NAME send the client's name
+                if message == 'NAME':
+                     client_socket.send(bytes(msg, FORMAT))
+                else:
+                    # insert messages to text box
+                    self.textCons.config(state = NORMAL)
+                    self.textCons.insert(END,
+                                        message+"\n\n")
+                    
+                    self.textCons.config(state = DISABLED)
+                    self.textCons.see(END)
+            except OSError:
+                # an error will be printed on the command line or console if there's an error
+                print("An error occured!")
+                client_socket.close()
+                break
 
-#Frame per contenere i messaggi
-messages_frame = tkt.Frame(finestra)
-#creiamo una variabile di tipo stringa per i messaggi da inviare.
-my_msg = tkt.StringVar()
-#indichiamo all'utente dove deve scrivere i suoi messaggi
-my_msg.set("")
-#creiamo una scrollbar per navigare tra i messaggi precedenti.
-yscrollbar = tkt.Scrollbar(messages_frame)
-
-# La parte seguente contiene i messaggi.
-msg_list = tkt.Listbox(messages_frame, yscrollcommand=yscrollbar.set)
-yscrollbar.pack(side=tkt.RIGHT, fill=tkt.Y)
-
-msg_list.pack(side=tkt.LEFT, fill=tkt.BOTH, expand=True)
-messages_frame.pack(expand=True, fill=tkt.BOTH)
-
-#Creiamo il campo di input e lo associamo alla variabile stringa
-entry_field = tkt.Entry(finestra, textvariable=my_msg, width=150)
-# leghiamo la funzione send al tasto Return
-entry_field.bind("<Return>", send)
-entry_field.pack(side="left", expand=True)
-#creiamo il tasto invio e lo associamo alla funzione send
-send_button = tkt.Button(finestra, text="Invio", command=send)
-#integriamo il tasto nel pacchetto
-send_button.pack(side="left", expand=True)
-
-ready_button = tkt.Button(finestra, text="Pronto", command=ready)
-ready_button.pack(side="right", expand=True)
-
-
+    def ready(self,event=None):
+        self.sendButton("{start}")
 
 #----Connessione al Server----
 HOST = "127.0.0.1" #input('Inserire il Server host: ')
 PORT = 53000 #input('Inserire la porta del server host: ')
-if not PORT:
-    PORT = 53000
-else:
-    PORT = int(PORT)
+#if not PORT:
+ #   PORT = 53000
+#else:
+ #   PORT = int(PORT)
 
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
-
+FORMAT = "utf8"
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
-receive_thread = Thread(target=receive)
-receive_thread.start()
-
-finestra.geometry("720x720")
-tkt.mainloop()
+g = GUI()
