@@ -21,7 +21,7 @@ def accetta_connessioni_in_entrata():
         if game.get_status() == GameStatus.STARTED:
              client.send(bytes("Il gioco è attualmente in esecuzione - RIPROVA PIU' TARDI", "utf8"))
         else: 
-            client.send(bytes("Salve! Digita il tuo Nome seguito dal tasto Invio!", "utf8"))
+            #client.send(bytes("Salve! Digita il tuo Nome seguito dal tasto Invio!", "utf8"))
             if len(game.get_players()) > 0:
                 client.send(bytes("Sono già presenti i seguenti giocatori: \n", "utf8"))
                 for player in game.get_players():
@@ -34,7 +34,7 @@ def accetta_connessioni_in_entrata():
 
 """La funzione seguente gestisce la connessione di un singolo client."""
 def gestice_client(client):  # Prende il socket del client come argomento della funzione.
-       
+
     nome = client.recv(BUFSIZ).decode("utf8") #--------------------------------SCELTA NOME
     while game.check_name_player(nome) or nome == "{start}":
         client.send(bytes('Il nome %s è già stato utilizzato o è incompatibile. Scegline un altro' %nome, "utf8"))
@@ -44,42 +44,38 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
 
     #BENVENUTO
     client.send(bytes('Benvenuto %s! Se vuoi lasciare la Chat' % nome, "utf8"))
-    client.send(bytes('Clicca il pulsante Pronto per dichiararti pronto \n', "utf8"))
-    client.send(bytes('{quit} per uscire dal gioco', "utf8"))
+    client.send('Clicca il pulsante Pronto per dichiararti pronto'.encode())
+    client.send('{quit} per uscire dal gioco'.encode())
     
-    broadcast(bytes("%s si è unito alla chat!" % nome, "utf8"))
+    broadcast("%s si è unito alla chat!" % nome)
     
     clients[client] = nome
-    global timerGame
-    global timerQuestion
-    global gameStatus
-    global currentPlayer
     
     #si mette in ascolto del thread del singolo client e ne gestisce l'invio dei messaggi o l'uscita dalla Chat
     while True:
-        msg = client.recv(BUFSIZ)
+        msg = client.recv(BUFSIZ).decode("utf8")
         gameStatus = game.get_status()
         
         #----------------------------------------------------------------------COMANDI
         if msg == QUIT: #------------------------------------------------------QUIT
-            client.send(bytes("Si è scelto di uscire", "utf8"))
+            client.send("Si è scelto di uscire".encode())
             client.close()
-            broadcast(bytes("%s ha abbandonato la Chat." % nome, "utf8"))
+            broadcast("%s ha abbandonato la Chat." % nome)
             del clients[client]
             break
         elif msg == START and gameStatus != GameStatus.NOT_STARTED: #----------START SE GIA COMINCIATO
-            client.send(bytes("Gioco già cominciato!", "utf8"))
+            client.send("Gioco già cominciato!".encode())
             #Non deve proseguire
         elif msg == START and game.check_player_ready(nome): #----------------START SE GIA PRONTO
-            client.send(bytes('Ti sei già dichiarato pronto', "utf8"))
+            client.send('Ti sei già dichiarato pronto'.encode())
             #Non deve proseguire
         elif msg == START and gameStatus != GameStatus.STARTED: #--------------START
             game.setPlayerReady(nome)
-            broadcast(bytes("Il giocatore %s è pronto" % nome, "utf8"))
+            broadcast("Il giocatore %s è pronto" % nome)
             if game.get_status() == GameStatus.STARTED:
-                broadcast(bytes("\nTutti pronti, si parte!", "utf8"))
+                broadcast("\nTutti pronti, si parte!")
                 game.start_game()
-                timerGame = start_countdown(50, GameStatus.ENDED, True, None, end_function)
+                start_countdown(50, GameStatus.ENDED, True, None, end_function)
         else: #----------------------------------------------------------------BROADCAST MESSAGGIO (NO COMANDO)
             broadcast(msg, nome+": ")
         
@@ -89,33 +85,32 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             currentPlayer = game.get_current_player().get_name()
             
             if gameStatus == GameStatus.STARTED: #-----------------------------GIOCO INIZIATO, TESTO SCELTA PORTA
-                broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
-                broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
+                broadcast("\nTurno di: %s. " % currentPlayer)
+                broadcast("\nScegli una porta tra 1, 2 e 3.")
                 game.set_status(GameStatus.MENU_PHASE)
             else:
                 if currentPlayer == nome: #check giocatore
                     if gameStatus == GameStatus.MENU_PHASE: #------------------PORTA SCELTA
-                        if msg.decode().isnumeric():#-------------------------CHECK INSERIMENTO NUMERICO
+                        if msg.isnumeric():#-------------------------CHECK INSERIMENTO NUMERICO
                             if int(msg) == 1 or int(msg) == 2 or int(msg) == 3:
                                 if game.answer_menu(msg): #------------------------PORTA CON DOMANDA
-                                    broadcast(bytes(game.get_question(), "utf8"))
+                                    broadcast(game.get_question())
                                     game.set_status(GameStatus.QUESTION_PHASE)
                                     gameStatus = GameStatus.QUESTION_PHASE
-                                    timerQuestion = start_countdown(5, GameStatus.MENU_PHASE, False, GameStatus.QUESTION_PHASE, stop_time_answer)
+                                    start_countdown(5, GameStatus.MENU_PHASE, False, GameStatus.QUESTION_PHASE, stop_time_answer)
                                 else: #--------------------------------------------PORTA BOMBA
-                                    broadcast(bytes("%s è entrato nella porta sbagliata!." %nome, "utf8"))
+                                    broadcast("%s è entrato nella porta sbagliata!." %nome)
                                     game.next_player()
                                     game.removePlayer(game.get_player(currentPlayer)) 
                                     if game.check_end():
-                                        
                                         game.set_status(GameStatus.ENDED)
                                         gameStatus = GameStatus.ENDED
                                     else:
                                         game.set_status(GameStatus.STARTED)
-                                        broadcast(bytes("%s se ne va!." %nome, "utf8"))
+                                        broadcast("%s se ne va!." %nome)
                                         currentPlayer = game.get_current_player().get_name()
-                                        broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
-                                        broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
+                                        broadcast("\nTurno di: %s. " % currentPlayer)
+                                        broadcast("\nScegli una porta tra 1, 2 e 3.")
                                         game.set_status(GameStatus.MENU_PHASE)
                                         gameStatus = GameStatus.MENU_PHASE
                             else:
@@ -124,16 +119,15 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                             client.send(bytes("Inserimento Errato, Scegli una porta tra 1, 2 , 3", "utf8"))
                             
                     elif gameStatus == GameStatus.QUESTION_PHASE:
-                        answer = msg.decode()
-                        if game.answer_question(answer):
+                        if game.answer_question(msg):
                             game.add_points()
-                            broadcast(bytes("Risposta esatta, punteggio aumentato!", "utf8"))
+                            broadcast("Risposta esatta, punteggio aumentato!")
                         else:
-                            broadcast(bytes("Risposta errata!", "utf8"))
+                            broadcast("Risposta errata!")
                         game.next_player()
                         currentPlayer = game.get_current_player().get_name()
-                        broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
-                        broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
+                        broadcast("\nTurno di: %s. " % currentPlayer)
+                        broadcast("Scegli una porta tra 1, 2 e 3.")
                         game.set_status(GameStatus.MENU_PHASE)
                 else:
                     client.send(bytes("Non è il tuo turno", "utf8"))
@@ -141,7 +135,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
 """ La funzione, che segue, invia un messaggio in broadcast a tutti i client."""
 def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione del nome.
     for utente in clients:
-        utente.send(bytes(prefisso, "utf8")+msg)
+        utente.send(bytes(prefisso, "utf8") + bytes(msg, "utf8"))
 
 def countdown(duration, quitStatus, alwaysDo, doStatus, function):
     thisQuestionPlayer = currentPlayer
@@ -164,37 +158,33 @@ def start_countdown(duration, quitStatus, alwaysDo, doStatus, function):
     countdown_thread = threading.Thread(target=countdown, args=(duration, quitStatus, alwaysDo, doStatus, function,))
     countdown_thread.daemon = True #rendo il thread deamon, alla chiusura del server morirà
     countdown_thread.start()
-    return countdown_thread
-    
-def print_winner():
-   for p in game.get_players():
-       print(p.get_name())
+    #return countdown_thread
 
 def stop_time_answer():
-    broadcast(bytes("Tempo Scaduto per rispondere", "utf8"))
+    broadcast("Tempo Scaduto per rispondere")
     game.next_player()
     currentPlayer = game.get_current_player().get_name()
-    broadcast(bytes("\nTurno di: %s. " % currentPlayer, "utf8"))
-    broadcast(bytes("\nScegli una porta tra 1, 2 e 3.", "utf8"))
+    broadcast("\nTurno di: %s. " % currentPlayer)
+    broadcast("\nScegli una porta tra 1, 2 e 3.")
     game.set_status(GameStatus.MENU_PHASE)
     gameStatus = GameStatus.MENU_PHASE
     
 def end_function():
     rank = game.get_players() # getrank ma è vuoto adesso
     winner = game.get_players()[0]
-    broadcast(bytes("%s Ha vinto." %winner.get_name(), "utf8"))
+    broadcast("%s Ha vinto." %winner.get_name())
     tm.sleep(1)
     game.set_status(GameStatus.ENDED)
     ##stampa classifica
-    broadcast(bytes("\nGioco Terminato. Classifica:", "utf8"))
+    broadcast("\nGioco Terminato. Classifica:", "utf8")
     i = 0
     for player in rank:
         i += 1
-        broadcast(bytes("\n{}°: {}, {}\n".format(i, player.get_name(), player.get_score()), "utf8"))
+        broadcast("\n{}°: {}, {}\n".format(i, player.get_name(), player.get_score()))
         tm.sleep(1)
     #reset gioco
     game.reset_all()
-    broadcast(bytes("Premi Pronto per giocare ad una nuova partita!", "utf8"))
+    broadcast("Premi Pronto per giocare ad una nuova partita!")
 
 clients = {}
 indirizzi = {}
@@ -203,8 +193,12 @@ PORT = 53000
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 game = Game()
-START = bytes("{start}", "utf8")
-QUIT = bytes("{quit}", "utf8")
+START = "{start}"
+QUIT = "{quit}"
+timerGame = ""
+timerQuestion = ""
+gameStatus = ""
+currentPlayer = ""
 SERVER = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)
 

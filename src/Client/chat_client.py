@@ -22,7 +22,8 @@ class GUI:
         self.login.resizable(width = False,
                             height = False)
         self.login.configure(width = 400,
-                            height = 300)
+                            height = 300,
+                            bg = "#17202A")
         # create a Label
         self.pls = Label(self.login,
                     text = "Please login to continue",
@@ -66,7 +67,6 @@ class GUI:
         self.Window.mainloop()
 
     def goAhead(self, name):
-        print(name)
         client_socket.send(bytes(name,FORMAT))
         self.login.destroy()
         self.layout(name)
@@ -144,7 +144,7 @@ class GUI:
                                 font = "Helvetica 10 bold",
                                 width = 20,
                                 bg = "#ABB2B9",
-                                command = self.sendButton(self.entryMsg.get()))
+                                command = lambda:  self.sendButton(self.entryMsg.get()))
         
         self.buttonMsg.place(relx = 0.77,
                             rely = 0.008,
@@ -180,13 +180,13 @@ class GUI:
     # function to basically start the thread for sending messages
     def sendButton(self, msg):
         self.textCons.config(state = DISABLED)
-        self.msg = msg
         self.entryMsg.delete(0, END)
-        client_socket.send(bytes(self.msg, FORMAT))
-        if self.msg == "{quit}":
+        print(msg)
+        client_socket.send(bytes(msg, FORMAT))
+        if msg == "{quit}":
             client_socket.close()
-            #finestra.quit()
-            #finestra.destroy()
+            self.Window.quit()
+            self.Window.destroy()
 
     # function to receive messages
     def receive(self):
