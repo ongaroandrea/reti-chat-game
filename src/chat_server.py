@@ -50,7 +50,8 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     broadcast("%s si è unito alla chat!" % nome)
     
     clients[client] = nome
-    
+    global matchIndex
+    global currentPlayer
     #si mette in ascolto del thread del singolo client e ne gestisce l'invio dei messaggi o l'uscita dalla Chat
     while True:
         msg = client.recv(BUFSIZ).decode("utf8")
@@ -74,6 +75,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
             broadcast("Il giocatore %s è pronto" % nome)
             if game.get_status() == GameStatus.STARTED:
                 broadcast("\nTutti pronti, si parte!")
+                matchIndex += 1
                 game.start_game()
                 start_countdown(50, GameStatus.ENDED, True, None, end_function)
         else: #----------------------------------------------------------------BROADCAST MESSAGGIO (NO COMANDO)
@@ -105,6 +107,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                                     if game.check_end():
                                         game.set_status(GameStatus.ENDED)
                                         gameStatus = GameStatus.ENDED
+                                        end_function()
                                     else:
                                         game.set_status(GameStatus.STARTED)
                                         broadcast("%s se ne va!." %nome)
@@ -138,19 +141,22 @@ def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione d
         utente.send(bytes(prefisso, "utf8") + bytes(msg, "utf8"))
 
 def countdown(duration, quitStatus, alwaysDo, doStatus, function):
-    thisQuestionPlayer = currentPlayer
-    
+    thisCountdownMatchIndex = matchIndex
+    thisPlayer = currentPlayer
     #il countdown si ferma quando finisce i secondi o quando il gioco arriva allo stato definito
     while duration > 0 and gameStatus != quitStatus: 
         tm.sleep(1)
         duration -= 1
-        print(duration)
+        #print(duration)
     #timer ended - eseguo la funzione specificata quando il flag alwaysDo è true
     #oppure quando sono in doStatus ed il giocatore è lo stesso
-    if alwaysDo: 
+    if alwaysDo and thisCountdownMatchIndex == matchIndex: 
         function()
     else:
-        if gameStatus == doStatus and thisQuestionPlayer == currentPlayer:
+        actualGameStatus = game.get_status()
+        #print(currentPlayer)
+        #print(thisPlayer)
+        if actualGameStatus == doStatus and thisCountdownMatchIndex == matchIndex and thisPlayer == currentPlayer:
             function()
     
     
@@ -167,7 +173,7 @@ def stop_time_answer():
     broadcast("\nTurno di: %s. " % currentPlayer)
     broadcast("\nScegli una porta tra 1, 2 e 3.")
     game.set_status(GameStatus.MENU_PHASE)
-    gameStatus = GameStatus.MENU_PHASE
+    #gameStatus = GameStatus.MENU_PHASE
     
 def end_function():
     rank = game.get_players() # getrank ma è vuoto adesso
@@ -199,6 +205,7 @@ timerGame = ""
 timerQuestion = ""
 gameStatus = ""
 currentPlayer = ""
+matchIndex = 0
 SERVER = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)
 
