@@ -35,6 +35,10 @@ def accetta_connessioni_in_entrata():
 """La funzione seguente gestisce la connessione di un singolo client."""
 def gestice_client(client):  # Prende il socket del client come argomento della funzione.
 
+    global matchIndex
+    global currentPlayer
+    global game
+    
     nome = client.recv(BUFSIZ).decode("utf8") #--------------------------------SCELTA NOME
     while game.check_name_player(nome) or nome == "{start}":
         client.send(bytes('Il nome %s è già stato utilizzato o è incompatibile. Scegline un altro' %nome, "utf8"))
@@ -50,8 +54,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     broadcast("%s si è unito alla chat!" % nome)
     
     clients[client] = nome
-    global matchIndex
-    global currentPlayer
+    
     #si mette in ascolto del thread del singolo client e ne gestisce l'invio dei messaggi o l'uscita dalla Chat
     while True:
         msg = client.recv(BUFSIZ).decode("utf8")
@@ -150,7 +153,7 @@ def countdown(duration, quitStatus, alwaysDo, doStatus, function):
         #print(duration)
     #timer ended - eseguo la funzione specificata quando il flag alwaysDo è true
     #oppure quando sono in doStatus ed il giocatore è lo stesso
-    if alwaysDo and thisCountdownMatchIndex == matchIndex: 
+    if alwaysDo and thisCountdownMatchIndex == matchIndex and game.get_status() != GameStatus.ENDED and game.get_status() != GameStatus.NOT_STARTED: 
         function()
     else:
         actualGameStatus = game.get_status()
