@@ -129,6 +129,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                             game.add_points()
                             broadcast("Risposta esatta, punteggio aumentato!")
                         else:
+                            game.remove_points()
                             broadcast("Risposta errata!")
                         game.next_player()
                         currentPlayer = game.get_current_player().get_name()
@@ -171,6 +172,7 @@ def start_countdown(duration, quitStatus, alwaysDo, doStatus, function):
 
 def stop_time_answer():
     broadcast("Tempo Scaduto per rispondere")
+    game.remove_points()
     game.next_player()
     currentPlayer = game.get_current_player().get_name()
     broadcast("\nTurno di: %s. " % currentPlayer)
@@ -179,8 +181,8 @@ def stop_time_answer():
     #gameStatus = GameStatus.MENU_PHASE
     
 def end_function():
-    rank = game.get_players() # getrank ma è vuoto adesso
-    winner = game.get_players()[0]
+    rank = game.get_rank() # getrank ma è vuoto adesso
+    winner = rank[0]
     broadcast("%s Ha vinto." %winner.get_name())
     tm.sleep(1)
     game.set_status(GameStatus.ENDED)
@@ -189,7 +191,7 @@ def end_function():
     i = 0
     for player in rank:
         i += 1
-        broadcast("\n{}°: {}, {}\n".format(i, player.get_name(), player.get_score()))
+        broadcast("\n{}°: {}, {}, {}\n".format(i, player.get_name(), player.get_score(), player.get_status()))
         tm.sleep(1)
     #reset gioco
     game.reset_all()
