@@ -2,7 +2,8 @@
 """
 Created on Sat May  8 19:17:36 2021
 
-@author: andre
+@author: Gruppo Carboni - Ongaro
+
 """
 from Game.gameStatus import GameStatus
 from Player.player import Player
@@ -36,8 +37,9 @@ class Game:
     def get_current_player(self):
         return self.currentPlayer
     
-    def check_name_player(self, name): #unused
-        return self.get_player(name) != None
+    #Ritorna vero se è diverso da None, non è una stringa vuota, non è uguale a {start} e {quit}
+    def check_name_player(self, name):
+        return name != None and not name and name != "{start}" and name != "{quit}"
     
     def get_player(self,name):
         for player in self.playerList:
@@ -137,9 +139,5 @@ class Game:
         self.gameStatus = GameStatus.NOT_STARTED
     
     def get_rank(self):
-        #Devo ottenere in ordine la lista delle persone che se ne sono andate
-        self.playerList.sort(key=lambda p: (p.get_score(), p.get_status() != PlayerStatus.DEAD ) )
-                
-    def method_t(self):
-        for player in self.playerList:
-            print(player.get_role())
+        self.playerList.sort(key=lambda p: (p.get_status() != PlayerStatus.DEAD, p.get_score()), reverse=True )
+        return self.playerList

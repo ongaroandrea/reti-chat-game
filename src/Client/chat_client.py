@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Script relativa alla chat del client utilizzato per lanciare la GUI Tkinter."""
+"""
+Created on Sat May  8 19:15:26 2021
 
+@author: Gruppo Carboni - Ongaro
+
+"""
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
-from tkinter import *
-from tkinter import font
-from tkinter import ttk
+from tkinter import Tk, Toplevel, Label, Entry, CENTER
+from tkinter import Scrollbar, Button, DISABLED, END, NORMAL, Text,N
 
 class GUI:
     # constructor method
@@ -21,36 +24,30 @@ class GUI:
         self.login.title("Login")
         self.login.resizable(width = False,
                             height = False)
+        self.login.geometry('500x500')  
+
         self.login.configure(width = 400,
                             height = 300,
                             bg = "#17202A")
         # create a Label
         self.pls = Label(self.login,
-                    text = "Please login to continue",
+                    text = "Inserisci un nome per entrare",
                     justify = CENTER,
                     font = "Helvetica 14 bold")
         
-        self.pls.place(relheight = 0.15,
-                    relx = 0.2,
-                    rely = 0.07)
+        self.pls.grid(column=1,row=1,columnspan=2, sticky=N)
+        #self.pls.place(relheight = 0.15, relx = 0.2, rely = 0.07)
         # create a Label
-        self.labelName = Label(self.login,
-                            text = "Name: ",
-                            font = "Helvetica 12")
-        
-        self.labelName.place(relheight = 0.2,
-                            relx = 0.1,
-                            rely = 0.2)
+        #self.labelName = Label(self.login, text = "Nome: ", font = "Helvetica 12")
+        #self.labelName.place(relheight = 0.2, relx = 0.1, rely = 0.4)
         
         # create a entry box for
         # tyoing the message
         self.entryName = Entry(self.login,
                             font = "Helvetica 14")
         
-        self.entryName.place(relwidth = 0.4,
-                            relheight = 0.12,
-                            relx = 0.35,
-                            rely = 0.2)
+        self.entryName.grid(column=1,row=3,columnspan=2)
+        #self.entryName.place(relwidth = 0.4, relheight = 0.12, x=175, y=150)
         
         # set the focus of the curser
         self.entryName.focus()
@@ -58,12 +55,13 @@ class GUI:
         # create a Continue Button
         # along with action
         self.go = Button(self.login,
-                        text = "CONTINUE",
+                        text = "Accedi",
                         font = "Helvetica 14 bold",
                         command = lambda: self.goAhead(self.entryName.get()))
         
-        self.go.place(relx = 0.4,
-                    rely = 0.55)
+        self.go.grid(column=1,row=5,columnspan=2)
+        
+        #self.go.place(relx = 0.4, rely = 0.55)
         self.Window.mainloop()
 
     def goAhead(self, name):
@@ -84,8 +82,8 @@ class GUI:
         self.Window.title("CHAT GAME")
         self.Window.resizable(width = False,
                             height = False)
-        self.Window.configure(width = 470,
-                            height = 550,
+        self.Window.configure(width = 670,
+                            height = 750,
                             bg = "#17202A")
         
         self.labelHead = Label(self.Window,
@@ -140,7 +138,7 @@ class GUI:
         
         # create a Send Button
         self.buttonMsg = Button(self.labelBottom,
-                                text = "Send",
+                                text = "Invia",
                                 font = "Helvetica 10 bold",
                                 width = 20,
                                 bg = "#ABB2B9",
@@ -192,16 +190,16 @@ class GUI:
     def receive(self):
         while True:
             try:
-                message = client_socket.recv(1024).decode(FORMAT)
+                msg = client_socket.recv(1024).decode(FORMAT)
                 
                 # if the messages from the server is NAME send the client's name
-                if message == 'NAME':
-                     client_socket.send(bytes(msg, FORMAT))
+                if msg == 'Errore':
+                     #client_socket.send(bytes(msg, FORMAT))
+                     print("Gioco Partito")
                 else:
                     # insert messages to text box
                     self.textCons.config(state = NORMAL)
-                    self.textCons.insert(END,
-                                        message+"\n\n")
+                    self.textCons.insert(END, msg+ "\n\n")
                     
                     self.textCons.config(state = DISABLED)
                     self.textCons.see(END)
@@ -215,13 +213,8 @@ class GUI:
         self.sendButton("{start}")
 
 #----Connessione al Server----
-HOST = "127.0.0.1" #input('Inserire il Server host: ')
-PORT = 53000 #input('Inserire la porta del server host: ')
-#if not PORT:
- #   PORT = 53000
-#else:
- #   PORT = int(PORT)
-
+HOST = "127.0.0.1"
+PORT = 53000
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 FORMAT = "utf8"

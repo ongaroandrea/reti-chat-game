@@ -19,9 +19,8 @@ def accetta_connessioni_in_entrata():
         print("%s:%s si è collegato." % client_address)
         
         if game.get_status() == GameStatus.STARTED:
-             client.send(bytes("Il gioco è attualmente in esecuzione - RIPROVA PIU' TARDI", "utf8"))
+             client.send(bytes("Errore", "utf8"))
         else: 
-            #client.send(bytes("Salve! Digita il tuo Nome seguito dal tasto Invio!", "utf8"))
             if len(game.get_players()) > 0:
                 client.send(bytes("Sono già presenti i seguenti giocatori: \n", "utf8"))
                 for player in game.get_players():
@@ -40,16 +39,21 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     global game
     
     nome = client.recv(BUFSIZ).decode("utf8") #--------------------------------SCELTA NOME
-    while game.check_name_player(nome) or nome == "{start}":
+    while game.check_name_player(nome):
         client.send(bytes('Il nome %s è già stato utilizzato o è incompatibile. Scegline un altro' %nome, "utf8"))
         nome = client.recv(BUFSIZ).decode("utf8")
+    
+    #CONTROLLO STATO GIOCO
+    if game.get_status() == GameStatus.STARTED : 
+        client.send(bytes("Il gioco è attualmente in esecuzione - RIPROVA PIU' TARDI", "utf8"))
+        return 
     
     game.addPlayerToGameList(nome) #-------------------------------------------AGGIUNTA GIOCATORE
 
     #BENVENUTO
     client.send(bytes('Benvenuto %s! Se vuoi lasciare la Chat' % nome, "utf8"))
-    client.send('Clicca il pulsante Pronto per dichiararti pronto'.encode())
-    client.send('{quit} per uscire dal gioco'.encode())
+    client.send('\nClicca il pulsante Pronto per dichiararti pronto'.encode())
+    client.send('\n{quit} per uscire dal gioco'.encode())
     
     broadcast("%s si è unito alla chat!" % nome)
     
@@ -142,7 +146,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
 """ La funzione, che segue, invia un messaggio in broadcast a tutti i client."""
 def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione del nome.
     for utente in clients:
-        utente.send(bytes(prefisso, "utf8") + bytes(msg, "utf8"))
+        utente.send(bytes(prefisso + msg, "utf8"))
 
 def countdown(duration, quitStatus, alwaysDo, doStatus, function):
     thisCountdownMatchIndex = matchIndex
