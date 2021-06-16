@@ -86,8 +86,14 @@ class Game:
         self._check_all_players_ready()
 
     def removePlayer(self, player):
-        player.set_status(PlayerStatus.DEAD)
+        #player.set_status(PlayerStatus.DEAD)
+        print("Removing %s" %player.get_name())
+        self.playerList.remove(player)
         # self.turn -= 1 decrementa quando qualcuno muore?
+    
+    def killPlayer(self, player):
+        player.set_status(PlayerStatus.DEAD)
+        print("%s died" %player.get_name())
 
     def next_player(self):
         if self.turn + 1 == len(self.playerList):  # sono alla fine del giro, devo riiniziarlo

@@ -214,10 +214,10 @@ class GUI:
     def ready(self, event=None):
         self.sendButton("{start}")
 
-    def close(self):
-        client_socket.close()
-        self.Window.quit()
-        self.Window.destroy()
+def close(self):
+    client_socket.close()
+    self.Window.quit()
+    self.Window.destroy()
 
 # ----Connessione al Server----
 HOST = "127.0.0.1"

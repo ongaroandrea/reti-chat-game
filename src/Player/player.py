@@ -5,6 +5,7 @@ Created on Sat May  8 13:20:20 2021
 @author: Gruppo Carboni - Ongaro
 """
 from Player.playerStatus import PlayerStatus 
+from Player.playerRole import PlayerRole
 
 class Player :
     
@@ -26,7 +27,16 @@ class Player :
         return self.name
     
     def get_role(self):
-        return self.role
+        if self.role == PlayerRole.SHERIFF:
+            return "Sheriff"
+        elif self.role == PlayerRole.OUTLAW:
+            return "Outlaw"
+        elif self.role == PlayerRole.RENEGADE:
+            return "Renegade"
+        elif self.role == PlayerRole.DEPUTY_SHERIFF:
+            return "Deputy Sheriff"
+        else:
+            return "Citzen"
     
     def get_score(self):
         return self.score
