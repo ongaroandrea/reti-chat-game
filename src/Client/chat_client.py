@@ -34,10 +34,10 @@ class GUI:
         self.pls = Label(self.login,
                          text="Inserisci un nome per entrare",
                          justify=CENTER,
-                         font="Helvetica 14 bold")
+                         font="Helvetica 14 bold",bg='#17202A',fg='#AEB9E6')
 
-        self.pls.grid(column=1, row=1, columnspan=2, sticky=N)
-        # self.pls.place(relheight = 0.15, relx = 0.2, rely = 0.07)
+        #self.pls.grid(column=1, row=1, columnspan=2, sticky=N)
+        self.pls.place(relheight = 0.15, relx = 0.23, rely = 0.07)
         # create a Label
         # self.labelName = Label(self.login, text = "Nome: ", font = "Helvetica 12")
         # self.labelName.place(relheight = 0.2, relx = 0.1, rely = 0.4)
@@ -47,8 +47,8 @@ class GUI:
         self.entryName = Entry(self.login,
                                font="Helvetica 14")
 
-        self.entryName.grid(column=1, row=3, columnspan=2)
-        # self.entryName.place(relwidth = 0.4, relheight = 0.12, x=175, y=150)
+        #self.entryName.grid(column=1, row=3, columnspan=2)
+        self.entryName.place(relwidth = 0.4, relheight = 0.12,relx = 0.30,rely = 0.30)
 
         # set the focus of the curser
         self.entryName.focus()
@@ -58,11 +58,11 @@ class GUI:
         self.go = Button(self.login,
                          text="Accedi",
                          font="Helvetica 14 bold",
-                         command=lambda: self.goAhead(self.entryName.get()))
+                         command=lambda: self.goAhead(self.entryName.get()),bg='#8CAEE6')
 
-        self.go.grid(column=1, row=5, columnspan=2)
+        #self.go.grid(column=1, row=5, columnspan=2)
 
-        # self.go.place(relx = 0.4, rely = 0.55)
+        self.go.place(relx = 0.43, rely = 0.55)
         self.Window.mainloop()
 
     def goAhead(self, name):
@@ -143,7 +143,7 @@ class GUI:
                                 text="Invia",
                                 font="Helvetica 10 bold",
                                 width=20,
-                                bg="#ABB2B9",
+                                bg='#8CAEE6',
                                 command=lambda: self.sendButton(self.entryMsg.get()))
 
         self.buttonMsg.place(relx=0.77,
@@ -155,7 +155,7 @@ class GUI:
                                text="Pronto",
                                font="Helvetica 10 bold",
                                width=20,
-                               bg="#ABB2B9",
+                               bg='#8CAEE6',
                                command=self.ready)
 
         self.readyBtn.place(relx=0.77,
@@ -181,9 +181,10 @@ class GUI:
     def sendButton(self, msg):
         self.textCons.config(state=DISABLED)
         self.entryMsg.delete(0, END)
-        print(msg)
         client_socket.send(bytes(msg, FORMAT))
-        if msg == "{quit}":
+        if msg == "": #non inviare messaggi vuoti
+            return
+        elif msg == "{quit}":
             client_socket.close()
             self.Window.quit()
             self.Window.destroy()
