@@ -183,10 +183,10 @@ class GUI:
         self.entryMsg.delete(0, END)
         print(msg)
         client_socket.send(bytes(msg, FORMAT))
-       # if msg == "{quit}":
-       #     client_socket.close()
-       #     self.Window.quit()
-       #     self.Window.destroy()
+        if msg == "{quit}":
+            client_socket.close()
+            self.Window.quit()
+            self.Window.destroy()
 
     # function to receive messages
     def receive(self):
