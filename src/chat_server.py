@@ -50,7 +50,7 @@ def handle_client_request(client):  # Prende il socket del client come argomento
         client.close()
         return
 
-    game.addPlayerToGameList(nome)
+    game.add_player_to_game_list(nome)
 
     # BENVENUTO
     if len(game.get_players()) > 1:
@@ -92,7 +92,7 @@ def handle_client_request(client):  # Prende il socket del client come argomento
             client.send('Ti sei già dichiarato pronto'.encode())
         # START
         elif msg == START and gameStatus != GameStatus.STARTED:
-            game.setPlayerReady(nome)
+            game.set_player_ready(nome)
             broadcast("Il giocatore %s è pronto" % nome)
             # Se i giocatori sono tutti pronti parte il gioco
             if game.get_status() == GameStatus.STARTED:
@@ -136,7 +136,7 @@ def handle_client_request(client):  # Prende il socket del client come argomento
                             else:
                                 broadcast("%s è entrato nella porta sbagliata!." % nome)
                                 game.next_player()
-                                game.killPlayer(game.get_player(currentPlayer))
+                                game.kill_player(game.get_player(currentPlayer))
                                 # se non rimane solo un giocatore il gioco termina
                                 if game.check_end():
                                     game.set_status(GameStatus.ENDED)

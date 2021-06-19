@@ -19,7 +19,7 @@ class Player :
         self.status = status
 
     """ Stampo tutte le informazioni del giocatore """        
-    def showInfo(self):
+    def show_info(self):
         print ("Nome: ", self.name)
         print ("Ruolo: ", self.role)
         print ("Punteggio: ", self.score)

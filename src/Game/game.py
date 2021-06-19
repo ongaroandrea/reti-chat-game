@@ -68,7 +68,7 @@ class Game:
 
     """ Controlla che tutti i giocatori siano pronti
         Se sono tutti pronti viene cambiato lo stato dei giocatori e del gioco """
-    def _check_all_players_ready(self):
+    def check_all_players_ready(self):
         if len(self.playerList) == 1:
             self.gameStatus = GameStatus.NOT_STARTED  #non si può giocare da soli
             return
@@ -83,21 +83,21 @@ class Game:
             player.set_status(PlayerStatus.PLAYING)
 
     """ Aggiunta di un giocatore alla lista dei giocatori """ 
-    def addPlayerToGameList(self, name):
+    def add_player_to_game_list(self, name):
         self.playerList.append(Player(name, PlayerRole(len(self.playerList) % 4)))
 
     """ Imposto lo stato del giocatore come pronto""" 
-    def setPlayerReady(self, name):
+    def set_player_ready(self, name):
         self.get_player(name).set_status(PlayerStatus.READY)
-        self._check_all_players_ready()
+        self.check_all_players_ready()
 
     """ Rimuovo il numero di giocatori """ 
-    def removePlayer(self, player):
+    def remove_player(self, player):
         print("Removing %s" %player.get_name())
         self.playerList.remove(player)
     
     """ Imposto lo stato del giocatore come Dead """ 
-    def killPlayer(self, player):
+    def kill_player(self, player):
         player.set_status(PlayerStatus.DEAD)
         print("%s died" %player.get_name())
 
@@ -146,15 +146,6 @@ class Game:
             self.gameStatus = GameStatus.ENDED
             return True
         return False
-
-    """  Restituisco il giocatore vincente """ 
-    def check_winner(self): # unused
-        winner = ""
-        for player in self.get_rank():
-            if player.get_status() == PlayerStatus.PLAYING:
-                winner = player.get_name()
-        self.gameStatus = GameStatus.ENDED
-        return winner
 
     """  Reimposto lo stato dei giocatori e del gioca allo stato iniziale""" 
     def reset_all(self):
