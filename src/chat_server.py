@@ -23,7 +23,7 @@ def accept_in_connections():
         if game.get_status() != GameStatus.NOT_STARTED: 
             client.close()
             print("Gioco già iniziato. Impossibile far entrare un nuovo giocatore")
-            client.send(bytes("Gioco già iniziato. Impossibile far entrare un nuovo giocatore", "utf8"))
+            client.send(bytes("Errore", "utf8"))
         else:
             # ci serviamo di un dizionario per registrare i client
             indirizzi[client] = client_address
@@ -76,7 +76,6 @@ def handle_client_request(client):  # Prende il socket del client come argomento
         # --------COMANDI--------
         # QUIT
         if msg == QUIT:
-            # non funziona se si clicca la x in alto
             game.removePlayer(game.get_player(nome))
             broadcast("%s ha abbandonato la Chat." % nome)
             if (gameStatus != GameStatus.NOT_STARTED):

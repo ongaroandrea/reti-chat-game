@@ -9,15 +9,15 @@ from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 from tkinter import Tk, Toplevel, Label, Entry, CENTER
 from tkinter import Scrollbar, Button, DISABLED, END, NORMAL, Text
+import time
 
-
-class GUI:
+class Client:
 
     def __init__(self):
 
         self.Window = Tk()
         self.Window.withdraw()
-
+        
         # Schermata di login
         self.login = Toplevel()
         
@@ -65,6 +65,18 @@ class GUI:
 
         self.go.place(relx = 0.43, 
                       rely = 0.55)
+        
+        self.errorLabel = Label(self.login,
+                         text="",
+                         justify=CENTER,
+                         font="Helvetica 10",
+                         bg='#17202A',
+                         fg='#AEB9E6')
+        
+        self.errorLabel.place(relheight = 0.15, 
+                       relx = 0.0, 
+                       rely = 1)
+        
         self.Window.mainloop()
 
     """ Passaggio alla schermata successiva in caso di nome inserito non vuoto """
@@ -85,7 +97,10 @@ class GUI:
 
         self.Window.deiconify()
         self.Window.title("CHAT GAME")
-
+        
+        #Funzione da eseguire quando viene cliccata la x
+        self.Window.protocol("WM_DELETE_WINDOW", self.on_closing)
+        
         self.Window.resizable(width=False,
                               height=False)
 
@@ -182,10 +197,10 @@ class GUI:
     def sendButton(self, msg):
         self.textCons.config(state=DISABLED)
         self.entryMsg.delete(0, END)
-        client_socket.send(bytes(msg, FORMAT))
         if msg == "": # Blocco invio di messaggi vuoti
             return
-        elif msg == "{quit}":
+        client_socket.send(bytes(msg, FORMAT))
+        if msg == "{quit}":
             self.close()
 
     """ Ricezione dei messaggi """
@@ -197,6 +212,11 @@ class GUI:
                 # Se il server restituisce errore blocca la scrittura del nome
                 if msg == 'Errore':
                     print("Gioco Partito")
+                    i = 5
+                    while i != 0:
+                        print("Addio tra {} secondi", i)
+                        time.sleep(i)
+                    self.close()
                 else:
                     # Inserisci i messaggi alla textbox
                     self.textCons.config(state=NORMAL)
@@ -219,7 +239,11 @@ class GUI:
         client_socket.close()
         self.Window.quit()
         self.Window.destroy()
-
+        
+    def on_closing(self):
+        client_socket.send(bytes('{quit}', FORMAT))
+        self.close()
+        
 # ----Connessione al Server----
 HOST = "127.0.0.1"
 PORT = 53000
@@ -230,4 +254,4 @@ client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
 # ----Lancio l'applicativo----
-g = GUI()
+c = Client()
