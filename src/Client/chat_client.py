@@ -8,21 +8,22 @@ Created on Sat May  8 19:15:26 2021
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 from tkinter import Tk, Toplevel, Label, Entry, CENTER
-from tkinter import Scrollbar, Button, DISABLED, END, NORMAL, Text, N
+from tkinter import Scrollbar, Button, DISABLED, END, NORMAL, Text
 
 
 class GUI:
-    # constructor method
+
     def __init__(self):
 
-        # chat window which is currently hidden
         self.Window = Tk()
         self.Window.withdraw()
 
-        # login window
+        # Schermata di login
         self.login = Toplevel()
-        # set the title
+        
+        # Imposto il titolo della schermata
         self.login.title("Login")
+        
         self.login.resizable(width=False,
                              height=False)
         self.login.geometry('500x500')
@@ -30,60 +31,64 @@ class GUI:
         self.login.configure(width=400,
                              height=300,
                              bg="#17202A")
-        # create a Label
+
         self.pls = Label(self.login,
                          text="Inserisci un nome per entrare",
                          justify=CENTER,
-                         font="Helvetica 14 bold",bg='#17202A',fg='#AEB9E6')
+                         font="Helvetica 14 bold",
+                         bg='#17202A',
+                         fg='#AEB9E6')
 
-        #self.pls.grid(column=1, row=1, columnspan=2, sticky=N)
-        self.pls.place(relheight = 0.15, relx = 0.23, rely = 0.07)
-        # create a Label
-        # self.labelName = Label(self.login, text = "Nome: ", font = "Helvetica 12")
-        # self.labelName.place(relheight = 0.2, relx = 0.1, rely = 0.4)
+        self.pls.place(relheight = 0.15, 
+                       relx = 0.23, 
+                       rely = 0.07)
 
-        # create a entry box for
-        # tyoing the message
-        self.entryName = Entry(self.login,
-                               font="Helvetica 14")
+        # Casella di testo dove l'utente inserirà il nome
+        self.entryName = Entry(self.login, font="Helvetica 14")
 
-        #self.entryName.grid(column=1, row=3, columnspan=2)
-        self.entryName.place(relwidth = 0.4, relheight = 0.12,relx = 0.30,rely = 0.30)
+        self.entryName.place(relwidth = 0.4, 
+                             relheight = 0.12,
+                             relx = 0.30,
+                             rely = 0.30)
 
-        # set the focus of the curser
+        # Imposto il focus sulla casella di testo
         self.entryName.focus()
 
-        # create a Continue Button
-        # along with action
+        # Creazione del bottone - alla pressione di esso verrà invocata
+        # la funzione goAhead
         self.go = Button(self.login,
                          text="Accedi",
                          font="Helvetica 14 bold",
-                         command=lambda: self.goAhead(self.entryName.get()),bg='#8CAEE6')
+                         command=lambda: self.goAhead(self.entryName.get()),
+                         bg='#8CAEE6',
+                         fg='#ffffff')
 
-        #self.go.grid(column=1, row=5, columnspan=2)
-
-        self.go.place(relx = 0.43, rely = 0.55)
+        self.go.place(relx = 0.43, 
+                      rely = 0.55)
         self.Window.mainloop()
 
+    """ Passaggio alla schermata successiva in caso di nome inserito non vuoto """
     def goAhead(self, name):
         if name != "":  # Se il nome non è vuoto creo una nuova finestra
             client_socket.send(bytes(name, FORMAT))
             self.login.destroy()
             self.layout(name)
 
-            # the thread to receive messages
+            # Faccio partire i thread per ascoltare i messaggi in entrata
             rcv = Thread(target=self.receive)
             rcv.start()
 
-    # The main layout of the chat
+    """ Creazione layout della schermata principale del gioco """
     def layout(self, name):
 
         self.name = name
-        # to show chat window
+
         self.Window.deiconify()
         self.Window.title("CHAT GAME")
+
         self.Window.resizable(width=False,
                               height=False)
+
         self.Window.configure(width=670,
                               height=750,
                               bg="#17202A")
@@ -129,8 +134,6 @@ class GUI:
                               fg="#EAECEE",
                               font="Helvetica 13")
 
-        # place the given widget
-        # into the gui window
         self.entryMsg.place(relwidth=0.74,
                             relheight=0.06,
                             rely=0.008,
@@ -138,13 +141,13 @@ class GUI:
 
         self.entryMsg.focus()
 
-        # create a Send Button
         self.buttonMsg = Button(self.labelBottom,
                                 text="Invia",
                                 font="Helvetica 10 bold",
                                 width=20,
                                 bg='#8CAEE6',
-                                command=lambda: self.sendButton(self.entryMsg.get()))
+                                command=lambda: 
+                                    self.sendButton(self.entryMsg.get()))
 
         self.buttonMsg.place(relx=0.77,
                              rely=0.008,
@@ -165,11 +168,9 @@ class GUI:
 
         self.textCons.config(cursor="arrow")
 
-        # create a scroll bar
+        # Crea la scrollbar
         scrollbar = Scrollbar(self.textCons)
 
-        # place the scroll bar
-        # into the gui window
         scrollbar.place(relheight=1,
                         relx=0.974)
 
@@ -177,48 +178,47 @@ class GUI:
 
         self.textCons.config(state=DISABLED)
 
-    # function to basically start the thread for sending messages
+    """ Invio messaggi al server """
     def sendButton(self, msg):
         self.textCons.config(state=DISABLED)
         self.entryMsg.delete(0, END)
         client_socket.send(bytes(msg, FORMAT))
-        if msg == "": #non inviare messaggi vuoti
+        if msg == "": # Blocco invio di messaggi vuoti
             return
         elif msg == "{quit}":
-            client_socket.close()
-            self.Window.quit()
-            self.Window.destroy()
+            self.close()
 
-    # function to receive messages
+    """ Ricezione dei messaggi """
     def receive(self):
         while True:
             try:
                 msg = client_socket.recv(1024).decode(FORMAT)
 
-                # if the messages from the server is NAME send the client's name
+                # Se il server restituisce errore blocca la scrittura del nome
                 if msg == 'Errore':
-                    # client_socket.send(bytes(msg, FORMAT))
                     print("Gioco Partito")
                 else:
-                    # insert messages to text box
+                    # Inserisci i messaggi alla textbox
                     self.textCons.config(state=NORMAL)
                     self.textCons.insert(END, msg + "\n\n")
 
                     self.textCons.config(state=DISABLED)
                     self.textCons.see(END)
             except OSError:
-                # an error will be printed on the command line or console if there's an error
+                # Scrittura del messaggio di errore nel caso in cui ci sia un errore
                 print("An error occured!")
                 client_socket.close()
                 break
-
+    
+    """ Invio Messaggio {start} alla pressione del bottone Pronto"""
     def ready(self, event=None):
         self.sendButton("{start}")
-
-def close(self):
-    client_socket.close()
-    self.Window.quit()
-    self.Window.destroy()
+    
+    """ Chiusura applicazione e del socket"""
+    def close(self):
+        client_socket.close()
+        self.Window.quit()
+        self.Window.destroy()
 
 # ----Connessione al Server----
 HOST = "127.0.0.1"
@@ -229,4 +229,5 @@ FORMAT = "utf8"
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
+# ----Lancio l'applicativo----
 g = GUI()

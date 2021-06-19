@@ -2,9 +2,9 @@
 """
 Created on Sat May  8 19:27:43 2021
 
-@author: andre
-"""
+@author: Gruppo Carboni - Ongaro
 
+"""
 from enum import Enum
 
 class GameStatus(Enum) :

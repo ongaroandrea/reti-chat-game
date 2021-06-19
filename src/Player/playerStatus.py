@@ -2,7 +2,7 @@
 """
 Created on Sat May  8 17:00:49 2021
 
-@author: andre
+@author: Gruppo Carboni - Ongaro
 """
 
 from enum import Enum

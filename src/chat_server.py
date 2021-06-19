@@ -14,9 +14,7 @@ import time as tm
 
 
 """ La funzione che segue accetta le connessioni  dei client in entrata."""
-
-
-def accetta_connessioni_in_entrata():
+def accept_in_connections():
     while True:
         client, client_address = SERVER.accept()
         print("%s:%s si è collegato." % client_address)
@@ -30,13 +28,11 @@ def accetta_connessioni_in_entrata():
             # ci serviamo di un dizionario per registrare i client
             indirizzi[client] = client_address
             # diamo inizio all'attività del Thread - uno per ciascun client
-            Thread(target=gestice_client, args=(client,)).start()
+            Thread(target=handle_client_request, args=(client,)).start()
 
 
 """La funzione seguente gestisce la connessione di un singolo client."""
-
-
-def gestice_client(client):  # Prende il socket del client come argomento della funzione.
+def handle_client_request(client):  # Prende il socket del client come argomento della funzione.
 
     global matchIndex
     global currentPlayer
@@ -44,12 +40,9 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
     global gameStatus
 
     nome = client.recv(BUFSIZ).decode("utf8")  # --------------------------------SCELTA NOME
-    print(nome)
     while game.check_name_player(nome):
-        print(nome)
         # se il nome è già presente ci aggiunge un _ per distinguere i nomi
         nome = "{}{}".format(nome, "_")
-        print(nome)
 
     # CONTROLLO STATO GIOCO
     if game.get_status() != GameStatus.NOT_STARTED:
@@ -65,6 +58,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
         for player in game.get_players():
             if player.get_name() != nome: 
                 client.send(bytes("{}: {}\n".format(player.get_name(), player.get_role()), "utf8"))
+                
     client.send(bytes('Benvenuto %s! Se vuoi lasciare la Chat' % nome, "utf8"))
     client.send(bytes('\nClicca il pulsante Pronto per dichiararti pronto', "utf8"))
     client.send(bytes('\n{quit} per uscire dal gioco', "utf8"))
@@ -79,7 +73,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
         msg = client.recv(BUFSIZ).decode("utf8")
         gameStatus = game.get_status()
 
-        # COMANDI
+        # --------COMANDI--------
         # QUIT
         if msg == QUIT:
             # non funziona se si clicca la x in alto
@@ -108,7 +102,7 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
                 #il gioco iniza
                 game.start_game()
                 #inzia il timer del gioco principale
-                start_countdown(50, GameStatus.ENDED, True, None, end_function)
+                start_countdown(GAME_TIME, GameStatus.ENDED, True, None, end_function)
         # BROADCAST MESSAGGIO (se non è un comando)
         else:
             broadcast("{}: {}".format(nome, msg))
@@ -183,8 +177,6 @@ def gestice_client(client):  # Prende il socket del client come argomento della 
 
 
 """ La funzione, che segue, invia un messaggio in broadcast a tutti i client."""
-
-
 def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione del nome.
     for utente in clients:
         utente.send(bytes(prefisso + msg, "utf8"))
@@ -194,7 +186,6 @@ def broadcast(msg, prefisso=""):  # il prefisso è usato per l'identificazione d
     alwaysDo: specifica se va sempre fatto o vanno fatti controlli aggiuntivi
     doStatus: specifica quando bisogna eseguire la funzione specificata
 """
-
 def countdown(duration, quitStatus, alwaysDo, doStatus, function):
     thisCountdownMatchIndex = matchIndex
     thisPlayer = currentPlayer
@@ -212,16 +203,12 @@ def countdown(duration, quitStatus, alwaysDo, doStatus, function):
             function()
 
 """ Avvia un thread per il countdown """
-
-
 def start_countdown(duration, quitStatus, alwaysDo, doStatus, function):
     countdown_thread = threading.Thread(target=countdown, args=(duration, quitStatus, alwaysDo, doStatus, function,))
     countdown_thread.daemon = True  # rendo il thread deamon, alla chiusura del server morirà
     countdown_thread.start()
 
 """ Funzione da eseguire quando termina il tempo per rispondere alla domanda """
-
-
 def stop_time_answer():
     broadcast("Tempo Scaduto per rispondere")
     game.remove_points()
@@ -231,11 +218,9 @@ def stop_time_answer():
     broadcast("\nScegli una porta tra 1, 2 e 3.")
     game.set_status(GameStatus.MENU_PHASE)
 
-""" Fuzione che fa terminare il gioco e stampare la classifica """
-
-
+""" Funzione che fa terminare il gioco e stampare la classifica """
 def end_function():
-    rank = game.get_rank()  # getrank ma è vuoto adesso
+    rank = game.get_rank()
     winner = rank[0]
     broadcast("%s Ha vinto." % winner.get_name())
     tm.sleep(1)
@@ -261,6 +246,7 @@ ADDR = (HOST, PORT)
 game = Game()
 START = "{start}"
 QUIT = "{quit}"
+GAME_TIME = 300
 timerGame = ""
 timerQuestion = ""
 gameStatus = ""
@@ -272,7 +258,7 @@ SERVER.bind(ADDR)
 if __name__ == "__main__":
     SERVER.listen(5)
     print("In attesa di connessioni...")
-    ACCEPT_THREAD = Thread(target=accetta_connessioni_in_entrata)
+    ACCEPT_THREAD = Thread(target=accept_in_connections)
     ACCEPT_THREAD.start()
     ACCEPT_THREAD.join()
     SERVER.close()
