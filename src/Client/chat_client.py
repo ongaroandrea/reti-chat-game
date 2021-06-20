@@ -9,12 +9,12 @@ from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 from tkinter import Tk, Toplevel, Label, Entry, CENTER
 from tkinter import Scrollbar, Button, DISABLED, END, NORMAL, Text
-import time
 
 class Client:
 
     def __init__(self):
 
+        self.check = False
         self.Window = Tk()
         self.Window.withdraw()
         
@@ -77,6 +77,8 @@ class Client:
                        relx = 0.0, 
                        rely = 1)
         
+        
+
         self.Window.mainloop()
 
     """ Passaggio alla schermata successiva in caso di nome inserito non vuoto """
@@ -85,11 +87,11 @@ class Client:
             client_socket.send(bytes(name, FORMAT))
             self.login.destroy()
             self.layout(name)
-
             # Faccio partire i thread per ascoltare i messaggi in entrata
             rcv = Thread(target=self.receive)
             rcv.start()
-
+            
+    
     """ Creazione layout della schermata principale del gioco """
     def layout(self, name):
 
@@ -208,22 +210,12 @@ class Client:
         while True:
             try:
                 msg = client_socket.recv(1024).decode(FORMAT)
+                # Inserisci i messaggi alla textbox
+                self.textCons.config(state=NORMAL)
+                self.textCons.insert(END, msg + "\n\n")
 
-                # Se il server restituisce errore blocca la scrittura del nome
-                if msg == 'Errore':
-                    print("Gioco Partito")
-                    i = 5
-                    while i != 0:
-                        print("Addio tra {} secondi", i)
-                        time.sleep(i)
-                    self.close()
-                else:
-                    # Inserisci i messaggi alla textbox
-                    self.textCons.config(state=NORMAL)
-                    self.textCons.insert(END, msg + "\n\n")
-
-                    self.textCons.config(state=DISABLED)
-                    self.textCons.see(END)
+                self.textCons.config(state=DISABLED)
+                self.textCons.see(END)
             except OSError:
                 # Scrittura del messaggio di errore nel caso in cui ci sia un errore
                 print("An error occured!")

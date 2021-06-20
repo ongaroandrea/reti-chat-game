@@ -14,10 +14,11 @@ from Menu.menu import Menu
 class Game:
 
     def __init__(self, gameStatus=GameStatus.NOT_STARTED, playerList=[],
-                 currentPlayer=None, turn=0, question=Question(), 
-                 menu=Menu(), round_number=0):
+                 queue = [], currentPlayer=None, turn=0, question=Question(), 
+                 menu=Menu(), round_number=1):
 
         self.playerList = playerList
+        self.queue = queue
         self.gameStatus = gameStatus
         self.currentPlayer = currentPlayer
         self.turn = turn                    # num giocatore che deve giocare
@@ -43,14 +44,31 @@ class Game:
 
     """ Controlla che il nome del giocatore passato rispetti le regole """
     def check_name_player(self, name):
+        #Controllo nella lista dei giocatori attivi
         for player in self.playerList:
+            if player.get_name() == name:
+                return True
+        
+        #Controllo nella lista dei giocatori nella sala d'attesa
+        for player in self.queue:
             if player.get_name() == name:
                 return True
         return name == None or name == "{start}" and name == "{quit}"
 
+    """ Controlla se il giocatore è nella lista d'attesa """
+    def check_queue_players(self,name):
+        for player in self.queue:
+            if player.get_name() == name:
+                return True
+        return False
+    
     """ Restituisce un giocatore a partire da un nome dato in input """ 
     def get_player(self, name):
         for player in self.playerList:
+            if player.get_name() == name:
+                return player
+        
+        for player in self.queue:
             if player.get_name() == name:
                 return player
         return None
@@ -86,15 +104,22 @@ class Game:
     def add_player_to_game_list(self, name):
         self.playerList.append(Player(name, PlayerRole(len(self.playerList) % 4)))
 
+    """ Imposto lo stato del giocatore come non partecipante"""
+    def add_player_to_queue(self,name):
+        self.queue.append(Player(name, PlayerRole( (len(self.playerList) + len(self.queue)) % 4)))
+        
     """ Imposto lo stato del giocatore come pronto""" 
     def set_player_ready(self, name):
         self.get_player(name).set_status(PlayerStatus.READY)
         self.check_all_players_ready()
 
-    """ Rimuovo il numero di giocatori """ 
+    """ Rimuovo il giocatore in input """ 
     def remove_player(self, player):
         print("Removing %s" %player.get_name())
-        self.playerList.remove(player)
+        if player in self.queue:
+            self.queue.remove(player)
+        else:
+            self.playerList.remove(player)
     
     """ Imposto lo stato del giocatore come Dead """ 
     def kill_player(self, player):
@@ -154,6 +179,14 @@ class Game:
         self.gameStatus = GameStatus.NOT_STARTED
 
     """ Ottengo la classifica dei giocatori ordinata a seconda dello stato dei giocatori e del loro punteggio""" 
-    def get_rank(self):
-        self.playerList.sort(key=lambda p: (p.get_status() != PlayerStatus.DEAD, p.get_score()), reverse=True)
+    def get_rank(self): 
+        self.playerList.sort(key=lambda p: (p.get_status() != PlayerStatus.DEAD, p.get_score()), reverse=True)        
         return self.playerList
+    
+    """ Aggiungo rimasti in sala d'attesa alla lista dei giocatori attuali e cancello la sala d'attesa"""
+    def active_queue_players(self):
+        for pl in self.queue:
+            self.playerList.append(pl)
+        
+        self.queue.clear()
+        
