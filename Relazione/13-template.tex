@@ -38,7 +38,7 @@ In questo capitolo esponiamo la nostra interpretazione della traccia scelta tra 
 
 \subsection{Preparativi}
 Dopo aver aperto le connessioni ai client, essi saranno liberi di accedere al server il quale accetterà tutte le connessioni in entrata. Quando la connessione è stata accettata il client aprirà una finestra nella quale bisognerà inserire il nome del giocatore e cliccare il tasto invio. Alla pressione di quest'ultimo l'istanza del client invierà un messaggio al server contenente il nome specificato. \\
-Nel caso in cui fosse specificato un nome già presente nella lista dei giocatori, a quest'ultimo verrà aggiunto un \_ finale mentre se il gioco fosse già iniziato verrà segnalato all'utente il quale poi verrà buttato fuori dall'applicazione.\\
+Nel caso in cui fosse specificato un nome già presente nella lista dei giocatori, a quest'ultimo verrà aggiunto un \_ finale mentre se il gioco fosse già iniziato verrà segnalato all'utente e verrà messo in una lista d'attesa dove non dovrà compiere nessuna azione.\\
 All'apertura della seconda schermata (il gioco vero e proprio), verranno mostrati i nomi dei giocatori presenti seguiti dai corrispettivi ruoli, le istruzioni del gioco e il ruolo del giocatore appena entrato.\\
 Per ogni giocatore già presente nel server verrà mostrato un messaggio che specifica l'aggiunta nuovo giocatore, anch'esso a sua volta seguito dal ruolo corrispondente. \\
 Quando tutti i giocatori presenti nella lobby esprimeranno la loro intenzione di giocare tramite il tasto "Pronto" o il comando "\{start\}"
@@ -61,12 +61,13 @@ Se il giocatore sceglierà una delle due porte non contenenti la bomba gli verr�
 Nel caso di risposta corretta verranno aggiunti al punteggio attuale del giocatore 100 punti moltiplicati per il turno corrente così da ricevere più punti in funzione della durata della partita.\\
 
 \subsection{Fine Gioco}
-Il gioco terminerà in due casi:
+Il gioco terminerà in tre casi:
 \begin{itemize}
 	\item un giocatore rimarrà da solo 
 	\item al termine del countdown impostato all'inizio del gioco.\\ In questo caso verranno analizzati tutti i giocatori ancora all'interno del gioco e verrà mostrato il giocatore che ha realizzato più punti
+	\item all'uscita di uno dei giocatori
 \end{itemize}
-Dopo aver mostrato la classifica verranno impostati tutti i giocatori come non pronti e verrà chiesto di giocare un'altra partita. In questa fase potranno entrare anche altri giocatori.\clearpage
+Dopo aver mostrato la classifica verranno impostati tutti i giocatori come non pronti e verrà chiesto di giocare un'altra partita. In questa fase potranno entrare anche altri giocatori e verranno spostati i giocatori dalla sala d'attesa alla lista dei giocatori partecipanti.\clearpage
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{img/uml.jpg}
@@ -84,7 +85,12 @@ Questo metodo ha il compito di leggere il file passato in input, analizzare il c
 \subsection{Liste} 
 Una lista è una serie ordinata di valori, ognuno identificato da un indice. I valori che fanno parte della lista sono chiamati elementi.\\
 Sono state utilizzate le liste perché al contrario delle tuple presenti nei dizionari, che contengono oggetti eterogenei tra loro, riescono a contenere istanze di oggetti omogenei tra loro. Per quanto riguarda i set sono stati scartati per l'impossibilità di garantire un ordine al loro interno, cosa molto importante per la realizzazione della logica di gioco.\\
-Le liste vengono inoltre usate per immagazzinare i dizionari con le informazioni delle domande ottenute dal corrispettivo file.
+Le liste vengono usate per immagazzinare
+\begin{itemize}
+	\item i dizionari con le informazioni delle domande ottenute dal corrispettivo file.
+	\item i giocatori che stanno giocando 
+	\item i giocatori che sono entrati dopo che il gioco era iniziato
+\end{itemize}
 
 \subsection{Enums}
 Sono stati usati multipli enum per definire i vari stati del gioco e del giocatore e i suoi ruoli.
@@ -119,6 +125,7 @@ All'interno dei vari file è presente una ampia documentazione sul loro funziona
 \end{verbatim}
 Il server inizierà ad ascoltare sul'IP "\textbf{127.0.0.1}" e la porta "\textbf{53000}". Per modificare questi valori occorre modificare direttamente il file.
 \subsection{Eseguire un Client}
+Spostarsi all'interno del client utilizzando le apposite istruzioni del sistema utilizzato per far partire il gioco.
 \begin{verbatim}
 	python3 client.py
 \end{verbatim}
