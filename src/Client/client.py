@@ -9,6 +9,7 @@ from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 from tkinter import Tk, Toplevel, Label, Entry, CENTER
 from tkinter import Scrollbar, Button, DISABLED, END, NORMAL, Text
+import time as tm
 
 class Client:
 
@@ -234,7 +235,11 @@ class Client:
         
     def on_closing(self):
         client_socket.send(bytes('{quit}', FORMAT))
+        # lascio il client 1 secondo aperto per evitare problemi di concorrenza tra thread
+        tm.sleep(1)
         self.close()
+        
+        
         
 # ----Connessione al Server----
 HOST = "127.0.0.1"

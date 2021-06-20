@@ -81,13 +81,15 @@ def handle_client_request(client):  # Prende il socket del client come argomento
         # --------COMANDI--------
         # QUIT
         if msg == QUIT:
-            game.remove_player(game.get_player(nome))
             broadcast("%s ha abbandonato la Chat." % nome)
-            if (gameStatus != GameStatus.NOT_STARTED):
-                broadcast("La partita termina.")
-                end_function()
+            game.remove_player(game.get_player(nome))
             client.close()
             del clients[client]
+            if (gameStatus != GameStatus.NOT_STARTED):
+                print(gameStatus)
+                broadcast("La partita termina.")
+                end_function()
+            
             break
         # START se è gia cominciato
         elif msg == START and gameStatus != GameStatus.NOT_STARTED and not game.check_queue_players(nome):
