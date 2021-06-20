@@ -72,11 +72,11 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 * README.MD Template seen [here](https://github.com/othneildrew/Best-README-Template)
 
-[contributors-shield]: https://img.shields.io/github/contributors/leonardocarboni/OOP20-GooseGame.svg?style=for-the-badge
-[contributors-url]: https://github.com/leonardocarboni/OOP20-GooseGame/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/leonardocarboni/OOP20-GooseGame.svg?style=for-the-badge
-[forks-url]: https://github.com/leonardocarboni/OOP20-GooseGame/network/members
-[stars-shield]: https://img.shields.io/github/stars/leonardocarboni/OOP20-GooseGame.svg?style=for-the-badge
-[stars-url]: https://github.com/leonardocarboni/OOP20-GooseGame/stargazers
-[license-shield]: https://img.shields.io/github/license/leonardocarboni/OOP20-GooseGame.svg?style=for-the-badge
-[license-url]: https://github.com/leonardocarboni/OOP20-GooseGame/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/ongaroandrea/reti-chat-game.svg?style=for-the-badge
+[contributors-url]: https://github.com/ongaroandrea/reti-chat-game/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ongaroandrea/reti-chat-game.svg?style=for-the-badge
+[forks-url]: https://github.com/ongaroandrea/reti-chat-game/network/members
+[stars-shield]: https://img.shields.io/github/stars/ongaroandrea/reti-chat-game.svg?style=for-the-badge
+[stars-url]: https://github.com/ongaroandrea/reti-chat-game/stargazers
+[license-shield]: https://img.shields.io/github/license/ongaroandrea/reti-chat-game.svg?style=for-the-badge
+[license-url]: https://github.com/ongaroandrea/reti-chat-game/blob/master/LICENSE.txt
