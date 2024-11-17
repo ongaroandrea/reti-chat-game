@@ -32,7 +32,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Progetto realizzato per il corso universitario Programmazione di Reti, Unibo Cesena.
+Project developed for the university course “Network Programming” at Unibo Cesena.
 
 
 ### Built With
@@ -45,10 +45,10 @@ Progetto realizzato per il corso universitario Programmazione di Reti, Unibo Ces
 <!-- GETTING STARTED -->
 ## Getting Started
 
-Per ottenere una copia del prodotto, clonare la repository.
+To obtain a copy, clone the repository.
 
 ### Installation
-* Clonare la repository tramite
+* You can clone the repository using the following command:
    ```sh
    git clone https://github.com/ongaroandrea/reti-chat-game.git
    ```
@@ -57,7 +57,7 @@ Per ottenere una copia del prodotto, clonare la repository.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-_Le modalità d'uso del programma sono esplicate nella [Documentazione](https://github.com/ongaroandrea/reti-chat-game/blob/main/relazione.pdf)_
+_The usage instructions for the program are detailed in the [Documentation](https://github.com/ongaroandrea/reti-chat-game/blob/main/relazione.pdf)_
 
 
 <!-- LICENSE -->
